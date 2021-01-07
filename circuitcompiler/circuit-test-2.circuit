@@ -1,7 +1,0 @@
-func exp3(private a):
-	b = a * a
-	c = a * b
-	return c
-func sum(private a, private b):
-	c = a + b
-	return c
