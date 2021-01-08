@@ -15,178 +15,242 @@ type CurvePoint struct {
     y *big.Int
 }
 
-func PedersenVectorComit(a []*big.Int)(CurvePoint){
-	r:=secp256k1.SECP256K1()
-	x:=r.Params().Gx
-	y:=r.Params().Gy
-	for i := 0; i < len(a); i++ {
-		xtemp,ytemp := r.ScalarMult(r.Params().Gx,r.Params().Gy, a[i].Bytes())
-        x,y=r.Add(x,y,xtemp,ytemp)
 
-	}
-    c:=CurvePoint{x,y}
-	return c 
+
+func CurveScalarMult(G CurvePoint, scalar *big.Int)(CurvePoint,error){
+    c:=CurvePoint{}
+    r:=secp256k1.SECP256K1()
+	if !r.IsOnCurve(G.x,G.y) {
+        fmt.Println("\n Curve Scaler Mult: Not on curve")
+		return c, errors.New("\nPedersen Commitment: Not on curve")}
+	x,y:=r.ScalarMult(G.x,G.y,scalar.Bytes())
+	c=CurvePoint{x,y}
+	return c,nil
+}
+
+func CurveScalarDiv(G CurvePoint, scalar *big.Int)(CurvePoint){
+    
+   minus1, err := new(big.Int).SetString("115792089237316195423570985008687907852837564279074904382605163141518161494336", 10)
+      if err!=true{
+			fmt.Println("Curve scalar div: Field wrong")
+		}
+   c,_:=CurveScalarMult(G,minus1)
+   c,_=CurveScalarMult(c,scalar)
+	
+   return c
+}
+
+func CurveAdd(G,H CurvePoint)(CurvePoint,error){
+	c:=CurvePoint{}
+    r:=secp256k1.SECP256K1()
+	if !r.IsOnCurve(G.x,G.y)||(!r.IsOnCurve(H.x,H.y)) {
+        fmt.Println("\nCurve Add: Not on curve")
+		return c, errors.New("\nPedersen Commitment: Not on curve")}
+	x,y:=r.Add(G.x,G.y,H.x,H.y)
+	c=CurvePoint{x,y}
+	return c,nil
 }
 
 //compute Pedersen Commitment value*G+blind*H
-func PedersenComit(value,blind,Gx,Gy,Hx,Hy *big.Int)(*big.Int,*big.Int,error){
-	r:=secp256k1.SECP256K1()
-	if !r.IsOnCurve(Gx,Gy)||(!r.IsOnCurve(Hx,Hy)) {
-        fmt.Println("\nPedersen Commitment: Not on curve")
-		return big.NewInt(int64(0)),big.NewInt(int64(0)), errors.New("\nPedersen Commitment: Not on curve")}
+func PedersenComit(value,blind *big.Int,G,H CurvePoint)(CurvePoint){
+	c:=CurvePoint{}
 	
-    x1,y1:=r.ScalarMult(Gx,Gy,value.Bytes())
-    x2,y2:=r.ScalarMult(Hx,Hy,blind.Bytes())
-    x,y:=r.Add(x1,y1,x2,y2)
-    return x,y,nil 
+    c1,_:=CurveScalarMult(G,value)
+    c2,_:=CurveScalarMult(H,blind)
+    c,_=CurveAdd(c1,c2)
+
+    return c
+}
+
+
+//compute a Perdersen vector commitment c= a1*G1+a2*G2+...+r*H
+func PedersenVectorComit(a []*big.Int,G []CurvePoint, H CurvePoint,r *big.Int)(CurvePoint){
+    
+    c:=CurvePoint{}
+    temp:=CurvePoint{}
+	for i := 0; i < len(a); i++ {
+		temp,_ := CurveScalarMult(G[i], a[i])
+        if i==0{
+        	c=temp
+        }else{c,_=CurveAdd(c,temp)}
+
+	}
+	temp,_=CurveScalarMult(H,r)
+	c,_=CurveAdd(temp,c)
+  
+	return c 
 }
 
 //create a Pedersen commitment for each element of the vector, using different h over same blnding
 //c_i=g^a_ih_i^r
-func PedersenComitsForVector(a []*big.Int,hi [][]*big.Int,blnding,Gx,Gy *big.Int)([][]*big.Int,error){
-    var c [][]*big.Int
+func PedersenComitsForVector(a []*big.Int,hi []CurvePoint,r *big.Int,G CurvePoint)([]CurvePoint,error){
+    c:=[]CurvePoint{}
     if len(a)!=len(hi){
     	fmt.Println("\nGenerator hi not match the number of elements in a")
         return c,errors.New("\nGenerator hi not match the number of elements in a")
     }
+
+    temp:=CurvePoint{}
     for i := 0; i < len(a); i++ {
-		tempx,tempy,err := PedersenComit(a[i],blnding,Gx,Gy,hi[i][0],hi[i][1])
-		if err!=nil{
-			fmt.Println("PedersenComitForVector wrong")
-			return c,errors.New("PedersenComitForVector wrong")
-		}
-		c=append(c,[]*big.Int{tempx,tempy})
+    	temp=PedersenComit(a[i],r,G,hi[i])
+		if i==0{
+			c=append(c,temp)
+		}else{c=append(c,temp)}
 	}	
     return c,nil
 }
 
-//generate a generators as an double array
-func Generators(a int)([][]*big.Int){
-	var c [][]*big.Int
+//generate a generators vector as an double array, lenth a
+func Generators(len int)([]CurvePoint){
+	c:=[]CurvePoint{}
 	cv:=secp256k1.SECP256K1()
-	for i := 0; i < a; i++ {
-		tempx,tempy:= cv.ScalarMult(cv.Params().Gx,cv.Params().Gy,big.NewInt(int64(i+1)).Bytes())
-		c=append(c,[]*big.Int{tempx,tempy})
+	G:=CurvePoint{cv.Params().Gx,cv.Params().Gy}
+	for i := 0; i < len; i++ {
+		temp,_:= CurveScalarMult(G,big.NewInt(int64(i+1)))
+		if i==0{	
+			c=append(c,temp)
+		}else{c=append(c,temp)}
 	}
 	return c	
 }
 
 //zero-knowledge proof for inner product of Pedersen Commitments and a public vector
 
-func ZKproofPdsComits_PubVec(ci,hi [][]*big.Int,pubv []*big.Int,gamma,alpha,beta,t *big.Int,H CurvePoint)(CurvePoint,CurvePoint,CurvePoint,CurvePoint,*big.Int,*big.Int){
-    //compute c0
-    cv:=secp256k1.SECP256K1()
-    c0x,c0y:=cv.ScalarMult(H.x,H.y,gamma.Bytes())
+type pf_PdsComits_PubVec struct {
 
-    var taux *big.Int
-    var tauy *big.Int
+	c0 CurvePoint
+	omega CurvePoint
+	d1 CurvePoint
+	d2 CurvePoint
+	theta1 *big.Int
+	theta2 *big.Int
 
-    //compute tau=\prod h_i^pubv_i
-    for i := 0; i < len(pubv); i++ {
-		tempx,tempy:= cv.ScalarMult(hi[i][0],hi[i][1],pubv[i].Bytes())
-		if i>0{taux,tauy=cv.Add(taux,tauy,tempx,tempy)
-	    }else {taux=tempx;tauy=tempy}
-	}
-
-	//compute OMEGA
-	omegax,omegay,err1:= PedersenComit(gamma,t,taux,tauy,H.x,H.y)
-		if err1!=nil{
-			fmt.Println("ZKproofPdsComits_PubVec wrong")
-		}
-   //compute d1 d2
-   d1x,d1y:=cv.ScalarMult(H.x,H.y,alpha.Bytes())
-   d2x,d2y,err2:= PedersenComit(alpha,beta,taux,tauy,H.x,H.y)
-		if err2!=nil{
-			fmt.Println("ZKproofPdsComits_PubVec wrong")
-		}
-   //compute challenge x
-   x := new(big.Int).SetBytes(crypto.Keccak256([]byte(taux.String()+tauy.String()+
-                                                      omegax.String()+omegay.String()+
-                                                      d1x.String()+d1y.String()+
-                                                      d2x.String()+d2y.String()+
-                                                      H.x.String()+H.y.String()+
-                                                      c0x.String()+c0y.String())))
-
-
-   //compute theta1 theta2
-   
-   r, err3 := new(big.Int).SetString("115792089237316195423570985008687907852837564279074904382605163141518161494337", 10)
-      if err3!=true{
-			fmt.Println("ZKproofPdsComits_PubVec Field wrong")
-		}
-   f := fields.NewFq(r)
-   theta1:=f.Sub(alpha,f.Mul(x,gamma))
-   theta2:=f.Sub(beta,f.Mul(x,t))
-   
-
-   c0:=CurvePoint{c0x,c0y}
-   omega:=CurvePoint{omegax,omegay}
-   d1:=CurvePoint{d1x,d1y}
-   d2:=CurvePoint{d2x,d2y}
-
-   return c0,omega,d1,d2,theta1,theta2
 }
 
-func ZKverifyPdsComits_PubVec(ci,hi [][]*big.Int,pubv []*big.Int,H,c0,omega,d1,d2 CurvePoint,theta1,theta2 *big.Int) (CurvePoint,bool){
-   
-   Cab:=CurvePoint{}
-  
-   
-   
-   cv:=secp256k1.SECP256K1()
+func ZKproofPdsComits_PubVec(hi []CurvePoint,pubv []*big.Int,gamma,alpha,beta,t *big.Int,H CurvePoint)(pf_PdsComits_PubVec){
+    
+    //compute c0
+    c0,_:=CurveScalarMult(H,gamma)
 
-   var taux *big.Int
-   var tauy *big.Int
-  
-   //compute tau=\prod h_i^pubv_i
+    
+
+    //compute tau=\prod h_i^pubv_i
+    var tau CurvePoint
     for i := 0; i < len(pubv); i++ {
-		tempx,tempy:= cv.ScalarMult(hi[i][0],hi[i][1],pubv[i].Bytes())
-		if i>0{taux,tauy=cv.Add(taux,tauy,tempx,tempy)
-	    }else {taux=tempx;tauy=tempy}
+		temp,_:= CurveScalarMult(hi[i],pubv[i])
+		if i>0{tau,_=CurveAdd(tau,temp)
+	    }else {tau=temp}
 	}
+  
 
-   x := new(big.Int).SetBytes(crypto.Keccak256([]byte(taux.String()+tauy.String()+
+	//compute OMEGA
+	omega:= PedersenComit(gamma,t,tau,H)
+		
+   //compute d1 d2
+   d1,_:=CurveScalarMult(H,alpha)
+   d2:= PedersenComit(alpha,beta,tau,H)
+		
+   //compute challenge x
+   x := new(big.Int).SetBytes(crypto.Keccak256([]byte(tau.x.String()+tau.y.String()+
                                                       omega.x.String()+omega.y.String()+
                                                       d1.x.String()+d1.y.String()+
                                                       d2.x.String()+d2.y.String()+
                                                       H.x.String()+H.y.String()+
                                                       c0.x.String()+c0.y.String())))
 
+
+   //compute theta1 theta2
+   
+   r, err := new(big.Int).SetString("115792089237316195423570985008687907852837564279074904382605163141518161494337", 10)
+      if err!=true{
+			fmt.Println("ZKproofPdsComits_PubVec Field wrong")
+		}
+   f := fields.NewFq(r)
+   theta1:=f.Sub(alpha,f.Mul(x,gamma))
+   theta2:=f.Sub(beta,f.Mul(x,t))
+   
+   pf:=pf_PdsComits_PubVec{c0,omega,d1,d2,theta1,theta2}
+
+   return pf
+}
+
+func ZKverifyPdsComits_PubVec(hi []CurvePoint,pubv []*big.Int,pf pf_PdsComits_PubVec,H CurvePoint) (bool){
+   
+  
+   //compute tau=\prod h_i^pubv_i
+    var tau CurvePoint
+    for i := 0; i < len(pubv); i++ {
+		temp,_:= CurveScalarMult(hi[i],pubv[i])
+		if i>0{tau,_=CurveAdd(tau,temp)
+	    }else {tau=temp}
+	}
+
+   x := new(big.Int).SetBytes(crypto.Keccak256([]byte(tau.x.String()+tau.y.String()+
+                                                      pf.omega.x.String()+pf.omega.y.String()+
+                                                      pf.d1.x.String()+pf.d1.y.String()+
+                                                      pf.d2.x.String()+pf.d2.y.String()+
+                                                      H.x.String()+H.y.String()+
+                                                      pf.c0.x.String()+pf.c0.y.String())))
+
    //verify d1==c_0^xh^theta1
    
-   tempx1,tempy1:=cv.ScalarMult(c0.x,c0.y,x.Bytes())
-   tempx2,tempy2:=cv.ScalarMult(H.x,H.y,theta1.Bytes())
-   tempx,tempy:=cv.Add(tempx1,tempy1,tempx2,tempy2)
-   if  (d1.x.Cmp(tempx)!=0)||(d1.y.Cmp(tempy)!=0){return Cab,false}
+   temp1,_:=CurveScalarMult(pf.c0,x)
+   temp2,_:=CurveScalarMult(H,pf.theta1)
+   temp,_:=CurveAdd(temp1,temp2)
+   if  (pf.d1.x.Cmp(temp.x)!=0)||(pf.d1.y.Cmp(temp.y)!=0){return false}
 
-   //verify d2==c_0^xh^theta1 
-   tempx1,tempy1=cv.ScalarMult(taux,tauy,theta1.Bytes())
-   tempx2,tempy2=cv.ScalarMult(H.x,H.y,theta2.Bytes())
-   tempx1,tempy1=cv.Add(tempx1,tempy1,tempx2,tempy2)
-   tempx2,tempy2=cv.ScalarMult(omega.x,omega.y,x.Bytes())
-   tempx,tempy=cv.Add(tempx1,tempy1,tempx2,tempy2)
+   //verify d2==tau^theta1 * omega^x * h^theta2
+   temp1,_=CurveScalarMult(tau,pf.theta1)
+   temp2,_=CurveScalarMult(H,pf.theta2)
+   temp,_=CurveAdd(temp1,temp2)
+   temp1,_=CurveScalarMult(pf.omega,x)
+   temp,_=CurveAdd(temp,temp1)
 
-   if  (d2.x.Cmp(tempx)!=0)||(d2.y.Cmp(tempy)!=0){return Cab,false}
+   if  (pf.d2.x.Cmp(temp.x)!=0)||(pf.d2.y.Cmp(temp.y)!=0){return false}
 
    
-   //compute Cab=\prod c_i^{b_i}/omega
-   var Cabx *big.Int
-   var Caby *big.Int
-   for i := 0; i < len(pubv); i++ {
-		tempx,tempy:= cv.ScalarMult(ci[i][0],ci[i][1],pubv[i].Bytes())
-		if i>0{Cabx,Caby=cv.Add(Cabx,Caby,tempx,tempy)
-	    }else {Cabx=tempx;Caby=tempy}
+   
+
+
+  return true
+}
+
+func ComputeL(gi []CurvePoint,a,b []*big.Int,H,G,c CurvePoint,r *big.Int)(CurvePoint){
+
+    n:=len(gi)
+    half:=n/2
+    
+    var l1 CurvePoint
+    for i := 0; i < half; i++ {
+		temp,_:= CurveScalarMult(gi[i+half],a[i])
+		if i>0{l1,_=CurveAdd(l1,temp)
+	    }else {l1=temp}
 	}
-   
-   minus1, err := new(big.Int).SetString("115792089237316195423570985008687907852837564279074904382605163141518161494336", 10)
-      if err!=true{
-			fmt.Println("ZKverifyPdsComits_PubVec Field wrong")
-		}
-   omega.x,omega.y=cv.ScalarMult(omega.x,omega.y,minus1.Bytes())
-   Cabx,Caby=cv.Add(Cabx,Caby,omega.x,omega.y)
-   Cab=CurvePoint{Cabx,Caby}
+
+	N, _ := new(big.Int).SetString("115792089237316195423570985008687907852837564279074904382605163141518161494337", 10)
+    f := fields.NewFq(N)
+    
+    var ab *big.Int
+    for i := 0; i < half; i++ {
+    	tempab:=f.Mul(a[i],b[i+half])
+		if i>0{ab=f.Add(ab,tempab)
+	    }else {ab=tempab}
+	}
+
+	l2,_:= CurveScalarMult(G,ab)
+	l3,_:= CurveScalarMult(H,r)
+
+    L,_:=CurveAdd(l1,l2)
+    L,_=CurveAdd(L,l3)
+    return L
+
+}
 
 
+func ZKproofPdsVec_PubVec(gi []CurvePoint,a,b []*big.Int,c,h CurvePoint)(){
 
-  return Cab,true
+}
+
+func ZKverifyPdsVec_PubVec()(){
+
 }
