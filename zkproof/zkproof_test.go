@@ -84,15 +84,15 @@ func TestZkPds_PubVec(t *testing.T) {
 	random_t := big.NewInt(int64(4))
     
 	pf:=ZKproofPdsComits_PubVec(hi,publicInputs,gamma,alpha,beta,random_t,H)
-	fmt.Println("\nc0.x",pf.c0.x.Text(16))
-	fmt.Println("\nc0.y",pf.c0.y.Text(16))
+	fmt.Println("\nc0.x",pf.c0.X.Text(16))
+	fmt.Println("\nc0.y",pf.c0.Y.Text(16))
 
-	fmt.Println("\nomega.x",pf.omega.x)
-	fmt.Println("\nomega.y",pf.omega.y)
-	fmt.Println("\nd1.x",pf.d1.x.Text(16))
-	fmt.Println("\nd1.y",pf.d1.y)
-	fmt.Println("\nd2.x",pf.d2.x)
-	fmt.Println("\nd2.y",pf.d2.y)
+	fmt.Println("\nomega.x",pf.omega.X)
+	fmt.Println("\nomega.y",pf.omega.Y)
+	fmt.Println("\nd1.x",pf.d1.X.Text(16))
+	fmt.Println("\nd1.y",pf.d1.Y)
+	fmt.Println("\nd2.x",pf.d2.X)
+	fmt.Println("\nd2.y",pf.d2.Y)
 	fmt.Println("theta1",pf.theta1)
 	fmt.Println("theta2",pf.theta2)
     
