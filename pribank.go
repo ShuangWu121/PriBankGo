@@ -3,17 +3,20 @@ package main
 import(
 	"fmt"
 	"math/big"
-	"strings"
-	//"os"
+	//"strings"
+	//"encoding/binary"
+	"os"
+	"bufio"
     "bytes"
-	"github.com/arnaucube/go-snark/circuitcompiler"
+	"github.com/ShuangWu121/PriBankGo/circuitcompiler"
 	"github.com/arnaucube/go-snark/fields"
-	"github.com/arnaucube/go-snark/r1csqap"
+	"github.com/ShuangWu121/PriBankGo/r1csqap"
 	"encoding/gob"
 	"github.com/ShuangWu121/PriBankGo/zkproof"
 	"github.com/ShuangWu121/secp256k1"
 	"github.com/ethereum/go-ethereum/crypto"
 	"crypto/rand"
+	//"unsafe"
     //"errors"
     //"github.com/ethereum/go-ethereum/crypto"
 )
@@ -33,51 +36,21 @@ func main(){
 	fmt.Println("Generating QAP for Circuit")
 
 
-	/* build the circuit for PriBank (simple version)
-	 b1new=b1-v12
-	 b2new=b2+v12
-	 total=b1new+b2new
-	 v12=v121*2+v122
-	 v12*(v12-1)=0
-	*/
-	
-	code := `
-	func main(private b1, private b2,`+
-		`private b1new, private b2new, private b3new,`+
-		`private v12,private v121,private v122, private v123,`+
-		`public total):
-		s0 = b2+v12
-		equals(s0,b2new)
-		s1 = b1new +v12
-		equals(s1, b1)`+
-		// check v12, use variable z
-		`z1=v121*2
-		z2=z1+v122
-		z3=z2+v123
-		equals(z3,v12)`+
-        //check range of v12... use variable zz
-		`zz1=v121-1
-		zz2=zz1*v121
-		zz3=0+0
-		equals(zz2,zz3)
-
-		s2=b1new+b2new 
-		s8=s2+b3new
-		equals(s8,total)
-		out = 1 * 1
-	`
-	fmt.Print("\nBuild the circuit:",code)
-
 	// parse the code
-	parser := circuitcompiler.NewParser(strings.NewReader(code))
+	circuitFile, _ := os.Open("cir.txt")
+
+
+	// parse circuit code
+	parser := circuitcompiler.NewParser(bufio.NewReader(circuitFile))
 	circuit, err := parser.Parse()
 	if err!=nil{fmt.Println("circuit parse wrong")}
 
 	
 	// code to R1CS
-	fmt.Println("\nGenerating R1CS from code, the matrics of u, v, w are: ...")
+	fmt.Println("\nGenerating R1CS from code ...")
 	u, v, w := circuit.GenerateR1CS()
-	fmt.Println(u,v,w)
+	
+
 
 
 	// Set Finite Field, speck256k1
@@ -90,43 +63,81 @@ func main(){
 
     // R1CS to QAP, compute the polynomial from the matrics
 
+    fmt.Println("\ncompute QAP ...")
+
 	ux, vx, wx, zx := polyf.R1CSToQAP(u, v, w)
 
-	fmt.Println("\nThe QAP for the circuit is u_i(x),v_i(x),w_i(x),z_i(x)...")
-
- 
+    fmt.Println("\nGenerate private inputs")
     //these are the private witness
-	b1 := big.NewInt(int64(5))
-	b2 := big.NewInt(int64(2))
-	b1new := big.NewInt(int64(2))
-	b2new := big.NewInt(int64(5))
-	b3new := big.NewInt(int64(4))
-	v12 := big.NewInt(int64(3))
-	v121:= big.NewInt(int64(1))
-	v122:= big.NewInt(int64(1))
+	b1 := big.NewInt(int64(100))
+	b2 := big.NewInt(int64(34))
+	b3 := big.NewInt(int64(2000))
+	b4 := big.NewInt(int64(5))
+	b1new := big.NewInt(int64(93))
+	b2new := big.NewInt(int64(31))
+	b3new := big.NewInt(int64(2010))
+	b4new := big.NewInt(int64(5))
+
+	v12 := big.NewInt(int64(7))
+	v121:= big.NewInt(int64(0))
+	v122:= big.NewInt(int64(0))
 	v123:= big.NewInt(int64(0))
+	v124:= big.NewInt(int64(0))
+	v125:= big.NewInt(int64(0))
+	v126:= big.NewInt(int64(1))
+	v127:= big.NewInt(int64(1))
+	v128:= big.NewInt(int64(1))
+
+	v23:= big.NewInt(int64(10))
+	v231:= big.NewInt(int64(0))
+	v232:= big.NewInt(int64(1))
+	v233:= big.NewInt(int64(0))
+	v234:= big.NewInt(int64(1))
+	v235:= big.NewInt(int64(0))
+
+	v43 := big.NewInt(int64(0))
 
 
-	privateInputs := []*big.Int{b1,b2,b1new,b2new,b3new,v12,v121,v122,v123}
+	privateInputs := []*big.Int{b1,b2,b3,b4,b1new,b2new,b3new,b4new,v12,v121,v122,v123,v124,v125,v126,v127,v128,v23,v231,v232,v233,v234,v235,v43}
 
 	//public witness
-	total := big.NewInt(int64(11))
+	total := big.NewInt(int64(2139))
+
+
 	publicSignals := []*big.Int{total}
 
     // wittness
-	wires, err := circuit.CalculateWitness(privateInputs, publicSignals)
-	if(err!=nil){fmt.Println("circuit inputs wrong")}
+	wires, _ := circuit.CalculateWitness(privateInputs, publicSignals)
+	
 
-	fmt.Println("The whole wires of the circuit are:",wires)
+	fmt.Println("\nThe number of wires is:",len(wires))
+	fmt.Println("wires values:",wires)
+	fmt.Println("\nsignals are :",circuit.Signals)
 
-    fmt.Println("Compute the polynomials with the witnesses, compute Ax=sum{a_iu_i(x)}, Bx=sum{a_iv_i(x)}, Cx=sum{a_iw_i(x)},P(x)=Ax*Bx-Cx")
+	//for i := 0; i < len(wires); i++ {
+   // 	fmt.Println(circuit.Signals[i]+" is ",wires[i])
+	//}	
+    
+
+
+    fmt.Println("\nR1CS is correct? (result is valid when the inputs are valid) ",r1csqap.Check_r1cs(wires,u,v,w,polyf))
+    fmt.Println("\nQAP is correct? (result is valid when the inputs are valid) ",r1csqap.Check_QAP(wires,ux,vx,wx,u,v,w,polyf))
+
+
+    
+    
 
     //compute Ax=sum{a_iu_i(x)}, Bx=sum{a_iv_i(x)}, Cx=sum{a_iw_i(x)}
     // and P(x)=Ax*Bx-Cx  (which should be equal to hx*zx)
     // this end up with three polynomials
     
     Ax, Bx, Cx, px := polyf.CombinePolynomials(wires, ux, vx, wx)
+
     
+
+    
+    
+   // fmt.Println("px:",px)
 
 	fmt.Println("\ntest the correctness of the witnesses")
 	hx := polyf.DivisorPolynomial(px, zx)
@@ -143,7 +154,7 @@ func main(){
 
     
     //Prover commmit to all wires and coefficients of hx
-    fmt.Println("Prover commmits to all wires")
+    fmt.Println("\nProver commmits to all wires")
 
 
     //Generator G H
@@ -174,6 +185,7 @@ func main(){
     W:=EvalPolys(polyf,wx,x)
     z:=polyf.Eval(zx,x)
 
+
     //Compute X=[1*z(x),x*z(x),x^2*z(x),....] for computing h(x)z(x)
 
     X:=[]*big.Int{}
@@ -186,16 +198,15 @@ func main(){
  
     //Prover compute A=a_iu_i(x) B=a_iv_i(x) C=a_iw_i(x), A,B,C are single number
 
-    fmt.Println("Prover compute A=a_iu_i(x) B=a_iv_i(x) C=a_iw_i(x), HZ=h(x)*z(x):")
 
     A:=polyf.Eval(Ax,x)
     B:=polyf.Eval(Bx,x)
     C:=polyf.Eval(Cx,x)
     HZ:=polyf.F.Mul(polyf.Eval(hx,x),polyf.Eval(zx,x))
 
-    fmt.Println("A is", A)
-    fmt.Println("B is", B)
-    fmt.Println("C is", C)
+   // fmt.Println("A is", A)
+    //fmt.Println("B is", B)
+    //fmt.Println("C is", C)
 
     
     //Prover generates the proof
@@ -235,7 +246,15 @@ func main(){
 
 
 
+    
+    
+
+    fmt.Println("\ncommitment size:",len(c)*64,"bytes")
+    fmt.Println("proof size:704 bytes")
+
     /////////////////verifer check
+
+    fmt.Println("\nVerification:")
 
     //Verifier computes ca
     fmt.Println("validation A:",zkproof.ZKverifyPdsComits_PubVec(hi,U,pfA,H))
@@ -252,7 +271,7 @@ func main(){
 
 
     //Verifier computes cw
-    fmt.Println("validation W:",zkproof.ZKverifyPdsComits_PubVec(hi,W,pfW,H))
+    fmt.Println("validation C:",zkproof.ZKverifyPdsComits_PubVec(hi,W,pfW,H))
 	cw:=zkproof.CurvePointVecMult(c,W)
 	cw,_=zkproof.CurveSub(cw,pfW.Omega)
 
@@ -266,7 +285,7 @@ func main(){
     //chcek is chz*cw is the product of ca cb
 
     c_right,_:=zkproof.CurveAdd(chz,cw)
-    fmt.Println("inner product check",zkproof.ZkverifyPdsProduct(ca,cb,c_right,G,H,pfProduct,polyf))
+    fmt.Println("product check: com(A*B)==com(C+HZ)",zkproof.ZkverifyPdsProduct(ca,cb,c_right,G,H,pfProduct,polyf))
 
 
 
