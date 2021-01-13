@@ -9,7 +9,7 @@ import(
     "github.com/ShuangWu121/secp256k1"
     "github.com/ethereum/go-ethereum/crypto"
     "crypto/rand"
-    "github.com/arnaucube/go-snark/r1csqap"
+    "github.com/ShuangWu121/PriBankGo/r1csqap"
    // "encoding/gob"
 
 )
@@ -255,7 +255,7 @@ func ZKverifyPdsComits_PubVec(hi []CurvePoint,pubv []*big.Int,pf pf_PdsComits_Pu
 
 
 
-//zerp-knowledge proof for product of pedersen commitments 
+//zero-knowledge proof for product of pedersen commitments 
 type pf_PdsProduct struct{
 	d1 CurvePoint
 	d2 CurvePoint
@@ -360,8 +360,16 @@ func ZkverifyPdsProduct(ca,cb,c,G,H CurvePoint,pf pf_PdsProduct,polyf r1csqap.Po
 }
 
 
+//zero-knowledge proof for addition of pedersen commitments
+
+type pf_PdsAdd struct{
+
+}
+
+func Zk_proofPdsAdd(ca,cb,c,G,H CurvePoint,a,b,ra,rb,t *big.Int,polyf r1csqap.PolynomialField)(){
 
 
+}
 
 
 func ComputeL(gi []CurvePoint,a,b []*big.Int,H,G,c CurvePoint,r *big.Int)(CurvePoint){

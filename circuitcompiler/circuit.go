@@ -5,7 +5,7 @@ import (
 	"math/big"
 	"strconv"
 
-	"github.com/arnaucube/go-snark/r1csqap"
+	"github.com/ShuangWu121/PriBankGo/r1csqap"
 )
 
 // Circuit is the data structure of the compiled circuit
@@ -75,7 +75,7 @@ func insertVarNeg(arr []*big.Int, signals []string, v string, used map[string]bo
 		if !used[v] {
 			panic(errors.New("using variable before it's set"))
 		}
-		arr[indexInArray(signals, v)] = new(big.Int).Add(arr[indexInArray(signals, v)], new(big.Int).SetString("115792089237316195423570985008687907852837564279074904382605163141518161494336", 10))
+		arr[indexInArray(signals, v)] = new(big.Int).Add(arr[indexInArray(signals, v)], big.NewInt(int64(-1)))
 	}
 	return arr, used
 }
@@ -114,7 +114,7 @@ func (circ *Circuit) GenerateR1CS() ([][]*big.Int, [][]*big.Int, [][]*big.Int) {
 			bConstraint[0] = big.NewInt(int64(1))
 		} else if constraint.Op == "-" {
 			cConstraint[indexInArray(circ.Signals, constraint.Out)] = big.NewInt(int64(1))
-			aConstraint, used = insertVarNeg(aConstraint, circ.Signals, constraint.V1, used)
+			aConstraint, used = insertVar(aConstraint, circ.Signals, constraint.V1, used)
 			aConstraint, used = insertVarNeg(aConstraint, circ.Signals, constraint.V2, used)
 			bConstraint[0] = big.NewInt(int64(1))
 		} else if constraint.Op == "*" {
