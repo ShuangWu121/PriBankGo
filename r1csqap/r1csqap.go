@@ -3,8 +3,9 @@ package r1csqap
 import (
 	"bytes"
 	"math/big"
+	"fmt"
 
-	"github.com/ShuangWu121/go-snark/fields"
+	"github.com/arnaucube/go-snark/fields"
 )
 
 // Transpose transposes the *big.Int matrix
@@ -127,13 +128,13 @@ func (pf PolynomialField) Eval(v []*big.Int, x *big.Int) *big.Int {
 
 // NewPolZeroAt generates a new polynomial that has value zero at the given value
 func (pf PolynomialField) NewPolZeroAt(pointPos, totalPoints int, height *big.Int) []*big.Int {
-	fac := 1
+	fac := big.NewInt(int64(1))
 	for i := 1; i < totalPoints+1; i++ {
 		if i != pointPos {
-			fac = fac * (pointPos - i)
+			fac = pf.F.Mul(fac, big.NewInt(int64(pointPos - i)))
 		}
 	}
-	facBig := big.NewInt(int64(fac))
+	facBig :=fac// big.NewInt(int64(fac))
 	hf := pf.F.Div(height, facBig)
 	r := []*big.Int{hf}
 	for i := 1; i < totalPoints+1; i++ {
@@ -175,15 +176,18 @@ func (pf PolynomialField) R1CSToQAP(a, b, c [][]*big.Int) ([][]*big.Int, [][]*bi
 		gammas = append(gammas, pf.LagrangeInterpolation(cT[i]))
 	}
 	z := []*big.Int{big.NewInt(int64(1))}
-	for i := 1; i < len(alphas)-1; i++ {
+	
+	for i := 0; i < len(a); i++ {
 		z = pf.Mul(
 			z,
 			[]*big.Int{
 				pf.F.Neg(
-					big.NewInt(int64(i))),
+					big.NewInt(int64(i+1))),
 				big.NewInt(int64(1)),
 			})
+
 	}
+	
 	return alphas, betas, gammas, z
 }
 
@@ -213,4 +217,70 @@ func (pf PolynomialField) CombinePolynomials(r []*big.Int, ap, bp, cp [][]*big.I
 func (pf PolynomialField) DivisorPolynomial(px, z []*big.Int) []*big.Int {
 	quo, _ := pf.Div(px, z)
 	return quo
+}
+
+func Check_r1cs(wires []*big.Int,u,v,w [][]*big.Int,polyf PolynomialField )(bool){
+
+	correct:=true
+	fmt.Println("\nnumbers of gates:",len(u))
+
+	for j :=0;  j<len(u);j++{
+    	    sum_u:=big.NewInt(int64(0))
+    	    sum_v:=big.NewInt(int64(0))
+    	    sum_w:=big.NewInt(int64(0))
+            for i := 0; i < len(wires); i++ {
+    	        sum_u=polyf.F.Add(polyf.F.Mul(wires[i],u[j][i]),sum_u)
+    	        sum_v=polyf.F.Add(polyf.F.Mul(wires[i],v[j][i]),sum_v)
+    	        sum_w=polyf.F.Add(polyf.F.Mul(wires[i],w[j][i]),sum_w)
+    	        
+	        }
+	        temp:=polyf.F.Mul(sum_u,sum_v)	
+	        if temp.Cmp(sum_w)!=0{
+
+			fmt.Println("R1CS not correct with gates ",j)
+			fmt.Println("R1CS not correct:u",u[j])
+			fmt.Println("R1CS not correct:v",v[j])
+			fmt.Println("R1CS not correct:w",w[j])
+            correct=false
+			
+		}
+    }
+    return correct
+
+}
+
+func Check_QAP(wires []*big.Int,ux,vx,wx,u,v,w [][]*big.Int,polyf PolynomialField )(bool){
+
+	correct:=true
+
+	for j :=1;  j<len(u);j++{
+    	    v_u:=big.NewInt(int64(0))
+    	    v_v:=big.NewInt(int64(0))
+    	    v_w:=big.NewInt(int64(0))
+            for i := 0; i < len(wires); i++ {
+    	        v_u=polyf.Eval(ux[i],big.NewInt(int64(j)))
+    	        	if v_u.Cmp(polyf.F.Affine(u[j-1][i]))!=0{
+			        fmt.Println("not correct ux",i,"the value is",v_u,"but should be:",u[j-1][i],"evaluated at",j)
+                    ut:=Transpose(u)
+                    fmt.Println("lagelange build on:",ut[i])
+                    fmt.Println("check the lagelange:",polyf.Eval(polyf.LagrangeInterpolation(ut[i]),big.NewInt(int64(j))))
+                    correct=false 
+		            }
+    	        v_v=polyf.Eval(vx[i],big.NewInt(int64(j)))
+    	        	if v_v.Cmp(polyf.F.Affine(v[j-1][i]))!=0{
+			        fmt.Println("not correct vx",i)
+			        correct=false
+		            }
+		        v_w=polyf.Eval(wx[i],big.NewInt(int64(j)))
+    	        	if v_w.Cmp(polyf.F.Affine(w[j-1][i]))!=0{
+			        fmt.Println("not correct wx",i)
+			        correct=false
+		            }
+    	        
+	        }
+	        	
+    }
+   
+    return correct
+
 }
