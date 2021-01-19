@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"math/big"
 	"fmt"
-
+    "time"
 	"github.com/arnaucube/go-snark/fields"
 )
 
@@ -160,6 +160,7 @@ func (pf PolynomialField) LagrangeInterpolation(v []*big.Int) []*big.Int {
 
 // R1CSToQAP converts the R1CS values to the QAP values
 func (pf PolynomialField) R1CSToQAP(a, b, c [][]*big.Int) ([][]*big.Int, [][]*big.Int, [][]*big.Int, []*big.Int) {
+	start := time.Now()
 	aT := Transpose(a)
 	bT := Transpose(b)
 	cT := Transpose(c)
@@ -167,14 +168,17 @@ func (pf PolynomialField) R1CSToQAP(a, b, c [][]*big.Int) ([][]*big.Int, [][]*bi
 	for i := 0; i < len(aT); i++ {
 		alphas = append(alphas, pf.LagrangeInterpolation(aT[i]))
 	}
+    fmt.Println("Compute ux[i] done")
 	var betas [][]*big.Int
 	for i := 0; i < len(bT); i++ {
 		betas = append(betas, pf.LagrangeInterpolation(bT[i]))
 	}
+	fmt.Println("Compute vx[i] done")
 	var gammas [][]*big.Int
 	for i := 0; i < len(cT); i++ {
 		gammas = append(gammas, pf.LagrangeInterpolation(cT[i]))
 	}
+	fmt.Println("Compute wx[i] done")
 	z := []*big.Int{big.NewInt(int64(1))}
 	
 	for i := 0; i < len(a); i++ {
@@ -187,6 +191,8 @@ func (pf PolynomialField) R1CSToQAP(a, b, c [][]*big.Int) ([][]*big.Int, [][]*bi
 			})
 
 	}
+	elapsed := time.Since(start)
+	fmt.Println("Compute QAP done,used ",elapsed)
 	
 	return alphas, betas, gammas, z
 }
