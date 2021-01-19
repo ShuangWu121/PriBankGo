@@ -4,12 +4,13 @@ import(
 	"fmt"
 	"math/big"
 	"errors"
-   // "bytes"
+    "bytes"
     "github.com/arnaucube/go-snark/fields"
     "github.com/ShuangWu121/secp256k1"
     "github.com/ethereum/go-ethereum/crypto"
     "crypto/rand"
     "github.com/ShuangWu121/PriBankGo/r1csqap"
+    "encoding/gob"
    // "encoding/gob"
 
 )
@@ -362,17 +363,9 @@ func ZkverifyPdsProduct(ca,cb,c,G,H CurvePoint,pf pf_PdsProduct,polyf r1csqap.Po
 
 //zero-knowledge proof for addition of pedersen commitments
 
-type pf_PdsAdd struct{
-
-}
-
-func Zk_proofPdsAdd(ca,cb,c,G,H CurvePoint,a,b,ra,rb,t *big.Int,polyf r1csqap.PolynomialField)(){
 
 
-}
-
-
-func ComputeL(gi []CurvePoint,a,b []*big.Int,H,G,c CurvePoint,r *big.Int)(CurvePoint){
+func ComputeL(gi []CurvePoint,a,b []*big.Int,G,H CurvePoint,r *big.Int,polyf r1csqap.PolynomialField)(CurvePoint){
 
     n:=len(gi)
     half:=n/2
@@ -383,14 +376,11 @@ func ComputeL(gi []CurvePoint,a,b []*big.Int,H,G,c CurvePoint,r *big.Int)(CurveP
 		if i>0{l1,_=CurveAdd(l1,temp)
 	    }else {l1=temp}
 	}
-
-	N, _ := new(big.Int).SetString("115792089237316195423570985008687907852837564279074904382605163141518161494337", 10)
-    f := fields.NewFq(N)
     
     var ab *big.Int
     for i := 0; i < half; i++ {
-    	tempab:=f.Mul(a[i],b[i+half])
-		if i>0{ab=f.Add(ab,tempab)
+    	tempab:=polyf.F.Mul(a[i],b[i+half])
+		if i>0{ab=polyf.F.Add(ab,tempab)
 	    }else {ab=tempab}
 	}
 
@@ -403,11 +393,265 @@ func ComputeL(gi []CurvePoint,a,b []*big.Int,H,G,c CurvePoint,r *big.Int)(CurveP
 
 }
 
+func ComputeR(gi []CurvePoint,a,b []*big.Int,G,H CurvePoint,r *big.Int,polyf r1csqap.PolynomialField)(CurvePoint){
 
-func ZKproofPdsVec_PubVec(gi []CurvePoint,a,b []*big.Int,c,h CurvePoint)(){
+	n:=len(gi)
+    half:=n/2
+    
+    var R1 CurvePoint
+    for i := 0; i < half; i++ {
+		temp,_:= CurveScalarMult(gi[i],a[i+half])
+		if i>0{R1,_=CurveAdd(R1,temp)
+	    }else {R1=temp}
+	}
+    
+    var ab *big.Int
+    for i := 0; i < half; i++ {
+    	tempab:=polyf.F.Mul(a[i+half],b[i])
+		if i>0{ab=polyf.F.Add(ab,tempab)
+	    }else {ab=tempab}
+	}
+
+	R2,_:= CurveScalarMult(G,ab)
+	R3,_:= CurveScalarMult(H,r)
+
+    R,_:=CurveAdd(R1,R2)
+    R,_=CurveAdd(R,R3)
+    return R
 
 }
 
-func ZKverifyPdsVec_PubVec()(){
+func ComputeG_prime(x *big.Int,gi []CurvePoint,polyf r1csqap.PolynomialField)([]CurvePoint){
+    n:=len(gi)
+    half:=n/2
+    
+    var g_prime []CurvePoint
+	for i:=0;i<half;i++{
+       temp1,_:=CurveScalarMult(gi[i],polyf.F.Inverse(x))
+       temp2,_:=CurveScalarMult(gi[i+half],x)
+       temp,_:=CurveAdd(temp1,temp2)
+       g_prime=append(g_prime,temp)
+	}
 
+	return g_prime
+
+}
+
+func ComputeC_prime(x *big.Int,L,R,c CurvePoint,polyf r1csqap.PolynomialField)(CurvePoint){
+	temp1,_:=CurveScalarMult(L,polyf.F.Mul(x,x))
+	temp2,_:=CurveScalarMult(R,polyf.F.Mul(polyf.F.Inverse(x),polyf.F.Inverse(x)))
+	c,_=CurveAdd(c,temp1)
+	c,_=CurveAdd(c,temp2)
+	return c
+}
+
+func ComputeFold(x *big.Int,a []*big.Int,polyf r1csqap.PolynomialField)([]*big.Int){
+	n:=len(a)
+    half:=n/2
+    
+    var a_prime []*big.Int
+	for i:=0;i<half;i++{
+       temp1:=polyf.F.Mul(a[i],polyf.F.Inverse(x))
+       temp2:=polyf.F.Mul(a[i+half],x)
+       temp:=polyf.F.Add(temp1,temp2)
+       a_prime=append(a_prime,temp)
+	}
+
+	return a_prime
+
+}
+func Padding(input []*big.Int)([]*big.Int){
+	length:=len(input)
+	//fmt.Println("length",length)
+	power:=0
+	paddingto:=0
+	for i := 1; i < length; i=i*2 {
+    	power=power+1
+    	paddingto=i*2
+	}
+	//fmt.Println("paddingto",paddingto)
+	//fmt.Println("power",power)
+
+	for i := 0; i < (paddingto-length); i++{
+    	input=append(input,big.NewInt(int64(0)))
+	}
+	return input
+}
+
+type pf_PdsVec_PubVec struct{
+	LR []CurvePoint
+	d  CurvePoint
+	theta1 *big.Int
+	theta2 *big.Int
+}
+func ZKproofPdsVec_PubVec(gi []CurvePoint,g,h,ca,cab CurvePoint,a,b []*big.Int,ra,rab *big.Int, polyf r1csqap.PolynomialField)(pf_PdsVec_PubVec){//,c,h CurvePoint,polyf r1csqap.PolynomialField
+   
+   if(len(gi)!=len(a) && len(a)!=len(b)){
+   	fmt.Println("zkproof for Pedersen vector commitments: vector length wrong")
+   }
+   r:=polyf.F.Add(ra,rab)
+   c,_:=CurveAdd(ca,cab)
+   max,_:=new(big.Int).SetString("115792089237316195423570985008687907852837564279074904382605163141518161494337", 10)
+   var LR [] CurvePoint
+
+   for i:=0;len(gi)>1;i++{
+
+   		
+
+   		r1,_:=rand.Int(rand.Reader,max)
+   		L:=ComputeL(gi,a,b,g,h,r1,polyf)
+
+   		r2,_:=rand.Int(rand.Reader,max)
+  		R:=ComputeR(gi,a,b,g,h,r2,polyf)
+
+  		LR=append(append(LR,L),R)
+
+ 	    //compute challenge x
+   	    buf:=&bytes.Buffer{}
+		gob.NewEncoder(buf).Encode(append(append(append(gi,c),g),h))
+
+		
+
+
+    	x := new(big.Int).SetBytes(crypto.Keccak256(buf.Bytes()))
+    	x=polyf.F.Affine(x)  
+
+    	gi=ComputeG_prime(x,gi,polyf)
+    	c=ComputeC_prime(x,L,R,c,polyf)
+
+
+
+    	a=ComputeFold(polyf.F.Inverse(x),a,polyf)
+    	b=ComputeFold(x,b,polyf)
+    	r=polyf.F.Add(r,polyf.F.Add(polyf.F.Mul(r1,polyf.F.Mul(x,x)),polyf.F.Mul(r2,polyf.F.Mul(polyf.F.Inverse(x),polyf.F.Inverse(x)))))
+
+        /*if i==0 {
+    		fmt.Println("c prime is :",c)
+    		fmt.Println("gi lenth:",len(gi))
+    		fmt.Println("a lenth:",len(a))
+    		fmt.Println("b lenth:",len(b))
+
+            ab:=big.NewInt(int64(0))
+            for i:=0;i<len(a);i++{
+       			temp:=polyf.F.Mul(a[i],b[i])
+       			ab=polyf.F.Add(temp,ab)
+            }
+
+            c_a_ab1,_:=CurveScalarMult(gi[0],a[0])
+            c_a_ab2,_:=CurveScalarMult(gi[1],a[1])
+            c_a_ab,_:=CurveAdd(c_a_ab1,c_a_ab2)
+
+            c_ab,_:=CurveScalarMult(g,polyf.F.Add(polyf.F.Mul(a[0],b[0]),polyf.F.Mul(a[1],b[1])))
+
+            c_a_ab,_=CurveAdd(c_a_ab,c_ab)
+
+            h_r,_:=CurveScalarMult(h,r)
+            c_a_ab,_=CurveAdd(h_r,c_a_ab)
+
+            fmt.Println("c prime from raw compute:",c_a_ab)
+            fmt.Println("c prime from verifier:",c)
+    	}
+
+    	if i==1 {
+    		fmt.Println("c prime is :",c)
+    		fmt.Println("gi lenth:",len(gi))
+    		fmt.Println("a lenth:",len(a))
+    		fmt.Println("b lenth:",len(b))
+
+            ab:=big.NewInt(int64(0))
+            for i:=0;i<len(a);i++{
+       			temp:=polyf.F.Mul(a[i],b[i])
+       			ab=polyf.F.Add(temp,ab)
+            }
+
+            c_a_ab,_:=CurveScalarMult(gi[0],a[0])
+
+            c_ab,_:=CurveScalarMult(g,polyf.F.Mul(a[0],b[0]))
+
+            c_a_ab,_=CurveAdd(c_a_ab,c_ab)
+
+            h_r,_:=CurveScalarMult(h,r)
+            c_a_ab,_=CurveAdd(h_r,c_a_ab)
+
+            fmt.Println("c prime from raw compute:",c_a_ab)
+            fmt.Println("c prime from verifier:",c)
+    	}
+        */
+
+
+
+   }
+
+   	
+   	alpha1,_:=rand.Int(rand.Reader,max)
+   	alpha2,_:=rand.Int(rand.Reader,max)
+ 
+   	
+    temp1,_:=CurveScalarMult(gi[0],alpha1)
+    temp2,_:=CurveScalarMult(g,polyf.F.Mul(alpha1,b[0]))
+    temp1,_=CurveAdd(temp1,temp2)
+    temp2,_=CurveScalarMult(h,alpha2)
+    d,_:=CurveAdd(temp1,temp2)
+    
+    //compute challenge x
+   	buf:=&bytes.Buffer{}
+	gob.NewEncoder(buf).Encode(append(append(append(gi,c),g),h))
+
+
+    x := new(big.Int).SetBytes(crypto.Keccak256(buf.Bytes()))
+    x=polyf.F.Affine(x)  
+
+   	
+   	theta1:=polyf.F.Sub(alpha1,polyf.F.Mul(x,a[0]))
+   	theta2:=polyf.F.Sub(alpha2,polyf.F.Mul(x,r))
+    pf:=pf_PdsVec_PubVec{LR,d,theta1,theta2}
+    return pf
+
+    
+
+}
+
+func ZKverifyPdsVec_PubVec(gi []CurvePoint,g,h,ca,cab CurvePoint,b []*big.Int, polyf r1csqap.PolynomialField,pf pf_PdsVec_PubVec)(bool){
+
+	c,_:=CurveAdd(ca,cab)
+	for i:=0;len(gi)>1;i++{
+
+ 	    //compute challenge x
+   	    buf:=&bytes.Buffer{}
+		gob.NewEncoder(buf).Encode(append(append(append(gi,c),g),h))
+    	x := new(big.Int).SetBytes(crypto.Keccak256(buf.Bytes()))
+    	x=polyf.F.Affine(x)  
+
+    	gi=ComputeG_prime(x,gi,polyf)
+    	c=ComputeC_prime(x,pf.LR[2*i],pf.LR[2*i+1],c,polyf)
+
+    	//if i==0{fmt.Println("c prime in verification:",c)}
+    	//if i==1{fmt.Println("c prime in verification,i==1:",c)}
+
+    	b=ComputeFold(x,b,polyf)
+
+   }
+
+    //compute challenge x
+   	buf:=&bytes.Buffer{}
+	gob.NewEncoder(buf).Encode(append(append(append(gi,c),g),h))
+
+
+    x := new(big.Int).SetBytes(crypto.Keccak256(buf.Bytes()))
+    x=polyf.F.Affine(x)  
+
+    temp1,_:=CurveScalarMult(c,x)
+    temp2,_:=CurveScalarMult(gi[0],pf.theta1)
+    temp1,_=CurveAdd(temp1,temp2)
+
+    temp2,_=CurveScalarMult(g,polyf.F.Mul(b[0],pf.theta1))
+    temp1,_=CurveAdd(temp1,temp2)
+    temp2,_=CurveScalarMult(h,pf.theta2)
+    temp,_:=CurveAdd(temp1,temp2)
+
+
+
+   if  (temp.X.Cmp(pf.d.X)!=0)||(temp.Y.Cmp(pf.d.Y)!=0){return false}
+
+   return true
 }
