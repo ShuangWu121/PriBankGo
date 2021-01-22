@@ -99,8 +99,8 @@ func InputsGenerator(f fields.Fq)([]*big.Int,[]*big.Int,[]*big.Int){
 
     privateSignals=append(privateSignals,Txs...)
     privateInputs=append(privateInputs,privateSignals...)
-   // privateSignals=append(privateSignals,AddTxValueBits([]*big.Int{b1new,b2new,b3new,b4new})...)
-    privateSignals=append(privateSignals,AddTxValueBits([]*big.Int{v12,v13,v14})...)
+    privateSignals=append(privateSignals,AddTxValueBits([]*big.Int{b1new,b2new,b3new,b4new})...)
+    privateSignals=append(privateSignals,AddTxValueBits(Txs)...)
 
     //public inputs
 	total := big.NewInt(int64(339))
