@@ -269,8 +269,43 @@ func (pf PolynomialField) R1CSToQAP(a, b, c [][]*big.Int) ([][]*big.Int, [][]*bi
     }()*/
 
 
+    z1 := []*big.Int{big.NewInt(int64(1))}
 
-	
+    wg.Add(1)
+	go func(){
+		for i := 0; i < len(a)/2; i++ {
+			z1 = pf.Mul(
+				z1,
+				[]*big.Int{
+					pf.F.Neg(
+						big.NewInt(int64(i+1))),
+						big.NewInt(int64(1)),
+				})
+
+		}
+	 wg.Done()
+    }()
+
+    z2 := []*big.Int{big.NewInt(int64(1))}
+
+    wg.Add(1)
+	go func(){
+		for i := len(a)/2; i < len(a); i++ {
+			z2 = pf.Mul(
+				z2,
+				[]*big.Int{
+					pf.F.Neg(
+						big.NewInt(int64(i+1))),
+						big.NewInt(int64(1)),
+				})
+
+		}
+	 wg.Done()
+    }()
+
+
+
+	/*
 	z := []*big.Int{big.NewInt(int64(1))}
 
     wg.Add(1)
@@ -286,9 +321,11 @@ func (pf PolynomialField) R1CSToQAP(a, b, c [][]*big.Int) ([][]*big.Int, [][]*bi
 
 		}
 	 wg.Done()
-    }()
+    }()*/
 
     wg.Wait()
+
+    z:=pf.Mul(z1,z2)
 
     for i := 0; i < len(aT); i++ {
     	alphas = append(alphas, alphasTemp[i])
