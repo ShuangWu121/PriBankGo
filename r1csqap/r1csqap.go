@@ -180,7 +180,8 @@ func (pf PolynomialField) R1CSToQAP(a, b, c [][]*big.Int) ([][]*big.Int, [][]*bi
 	cT := Transpose(c)
 
 	var wg sync.WaitGroup
-	runtime.GOMAXPROCS(1)
+	runtime.GOMAXPROCS(runtime.NumCPU())
+	fmt.Println("cpu numbers",runtime.NumCPU())
 
 	var alphas [][]*big.Int
 
@@ -190,7 +191,7 @@ func (pf PolynomialField) R1CSToQAP(a, b, c [][]*big.Int) ([][]*big.Int, [][]*bi
     for i := 0; i < len(aT); i++ {
 			tru=append(tru,[]*big.Int{big.NewInt(int64(0))})
 	}
-	fmt.Println("what happen,tru len",len(tru),len(aT))
+	
     for i := 0; i < len(aT); i++ {
     	wg.Add(1)
     	a:=i
