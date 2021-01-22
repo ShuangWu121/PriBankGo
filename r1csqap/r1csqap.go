@@ -185,11 +185,11 @@ func (pf PolynomialField) R1CSToQAP(a, b, c [][]*big.Int) ([][]*big.Int, [][]*bi
 
 	var alphas [][]*big.Int
 
-	var tru [][]*big.Int
+	var alphasTemp [][]*big.Int
    
  
     for i := 0; i < len(aT); i++ {
-			tru=append(tru,[]*big.Int{big.NewInt(int64(0))})
+			alphasTemp=append(alphasTemp,[]*big.Int{big.NewInt(int64(0))})
 	}
 	
     for i := 0; i < len(aT); i++ {
@@ -198,7 +198,7 @@ func (pf PolynomialField) R1CSToQAP(a, b, c [][]*big.Int) ([][]*big.Int, [][]*bi
 		go func(){
 			
 			//fmt.Println("index",a,"start")
-			tru[a]=pf.LagrangeInterpolation(aT[a])
+			alphasTemp[a]=pf.LagrangeInterpolation(aT[a])
 			defer wg.Done()
 		}()
 	}
@@ -213,23 +213,62 @@ func (pf PolynomialField) R1CSToQAP(a, b, c [][]*big.Int) ([][]*big.Int, [][]*bi
     }()*/
 
 	var betas [][]*big.Int
-    wg.Add(1)
+
+	var betasTemp [][]*big.Int
+   
+ 
+    for i := 0; i < len(bT); i++ {
+			betasTemp=append(betasTemp,[]*big.Int{big.NewInt(int64(0))})
+	}
+	
+    for i := 0; i < len(bT); i++ {
+    	wg.Add(1)
+    	a:=i
+		go func(){
+			
+			//fmt.Println("index",a,"start")
+			betasTemp[a]=pf.LagrangeInterpolation(bT[a])
+			defer wg.Done()
+		}()
+	}
+    /*wg.Add(1)
 	 go func(){
 	 	
   	  	betas=ParalleUVW(bT,'v',pf)
     	wg.Done()   
     }()
 
+    */
 
-
+    
 	var gammas [][]*big.Int
+
+	var gammasTemp [][]*big.Int
+   
+ 
+    for i := 0; i < len(cT); i++ {
+			gammasTemp=append(gammasTemp,[]*big.Int{big.NewInt(int64(0))})
+	}
 	
-    wg.Add(1)
+    for i := 0; i < len(cT); i++ {
+    	wg.Add(1)
+    	a:=i
+		go func(){
+			
+			//fmt.Println("index",a,"start")
+			gammasTemp[a]=pf.LagrangeInterpolation(cT[a])
+			defer wg.Done()
+		}()
+	}
+	
+   /* wg.Add(1)
 	go func(){
    	 	gammas=ParalleUVW(cT,'w',pf)
     	wg.Done()
     
-    }()
+    }()*/
+
+
 
 	
 	z := []*big.Int{big.NewInt(int64(1))}
@@ -252,7 +291,16 @@ func (pf PolynomialField) R1CSToQAP(a, b, c [][]*big.Int) ([][]*big.Int, [][]*bi
     wg.Wait()
 
     for i := 0; i < len(aT); i++ {
-    	alphas = append(alphas, tru[i])
+    	alphas = append(alphas, alphasTemp[i])
+	}
+
+
+	for i := 0; i < len(bT); i++ {
+    	betas = append(betas, betasTemp[i])
+	}
+
+	for i := 0; i < len(cT); i++ {
+    	gammas = append(gammas, gammasTemp[i])
 	}
 
 	elapsed := time.Since(start)
