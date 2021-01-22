@@ -93,9 +93,12 @@ func InputsGenerator(f fields.Fq)([]*big.Int,[]*big.Int,[]*big.Int){
 
     v31:= big.NewInt(int64(0))
     v32:= big.NewInt(int64(0))
+    v34:= big.NewInt(int64(0))
 
+    v41:= big.NewInt(int64(0))
+    v42:= big.NewInt(int64(0))
     v43 := big.NewInt(int64(0))
-    Txs:=[]*big.Int{v12,v13,v14,v21,v23,v24,v31,v32,v43}
+    Txs:=[]*big.Int{v12,v13,v14,v21,v23,v24,v31,v32,v34,v41,v42,v43}
 
     privateSignals=append(privateSignals,Txs...)
     privateInputs=append(privateInputs,privateSignals...)
