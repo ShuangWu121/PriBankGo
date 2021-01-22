@@ -27,10 +27,10 @@ func main(){
 		`private v31u,private v32u,`+
 		`private v43,`+
 		//transaction of user1
-		//`private b1new1,private b1new2,private b1new3,private b1new4,private b1new5,private b1new6,private b1new7,private b1new8,`+
-		//`private b2new1,private b2new2,private b2new3,private b2new4,private b2new5,private b2new6,private b2new7,private b2new8,`+
-		//`private b3new1,private b3new2,private b3new3,private b3new4,private b3new5,private b3new6,private b3new7,private b3new8,`+
-		//`private b4new1,private b4new2,private b4new3,private b4new4,private b4new5,private b4new6,private b4new7,private b4new8,`+
+		`private b1new1,private b1new2,private b1new3,private b1new4,private b1new5,private b1new6,private b1new7,private b1new8,`+
+		`private b2new1,private b2new2,private b2new3,private b2new4,private b2new5,private b2new6,private b2new7,private b2new8,`+
+		`private b3new1,private b3new2,private b3new3,private b3new4,private b3new5,private b3new6,private b3new7,private b3new8,`+
+		`private b4new1,private b4new2,private b4new3,private b4new4,private b4new5,private b4new6,private b4new7,private b4new8,`+
 
 
 		`private v121,private v122,private v123,private v124,private v125,private v126,private v127,private v128,`+
@@ -63,7 +63,7 @@ func main(){
 		z12b12=z12b11+v127
 		z12b13=z12b12*2
 		z12b14=z12b13+v128
-		equals(z12b14,v12)`+/*
+		equals(z12b14,v12)`+
         //check range of v12.bits are 1 or 0, use variable z12o..a z12o..b
 		`
 		value0=0+0
@@ -97,7 +97,7 @@ func main(){
 
 		z12o8a=1-v128
 		z12o8b=z12o8a*v128
-		equals(z12o8b,value0)`+
+		equals(z12o8b,value0)`+/*
 		//check v24u
 		`
 		z24b1=v24u1*2
@@ -199,7 +199,7 @@ func main(){
 
 		z13o8a=1-v138
 		z13o8b=z13o8a*v138
-		equals(z13o8b,value0)`+
+		equals(z13o8b,value0)`+*/
 		//check b1new
 		`
 		zb1newb1=b1new1*2
@@ -267,7 +267,7 @@ func main(){
 		zb2newb12=zb2newb11+b2new7
 		zb2newb13=zb2newb12*2
 		zb2newb14=zb2newb13+b2new8
-		equals(zb2newb14,b2new)`+/*
+		equals(zb2newb14,b2new)`+
 		//check range of b2new.bits are 1 or 0, use variable zb2newo..a zb2newo..b
 		`
 		zb2newo1a=1-b2new1
@@ -318,7 +318,7 @@ func main(){
 		zb3newb12=zb3newb11+b3new7
 		zb3newb13=zb3newb12*2
 		zb3newb14=zb3newb13+b3new8
-		equals(zb3newb14,b3new)`+/*
+		equals(zb3newb14,b3new)`+
 		//check range of b3new.bits are 1 or 0, use variable zb3newo..a zb3newo..b
 		`
 		zb3newo1a=1-b3new1
@@ -369,7 +369,7 @@ func main(){
 		zb4newb12=zb4newb11+b4new7
 		zb4newb13=zb4newb12*2
 		zb4newb14=zb4newb13+b4new8
-		equals(zb4newb14,b4new)`+/*
+		equals(zb4newb14,b4new)`+
 		//check range of b4new.bits are 1 or 0, use variable zb4newo..a zb4newo..b
 		`
 		zb4newo1a=1-b4new1
@@ -402,7 +402,7 @@ func main(){
 
 		zb4newo8a=1-b4new8
 		zb4newo8b=zb4newo8a*b4new8
-		equals(zb4newo8b,value0)`+*/
+		equals(zb4newo8b,value0)`+
 		// check v14, use variable z14b...
 		`
 		z14b1=v141*2
