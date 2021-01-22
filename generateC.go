@@ -10,11 +10,11 @@ import(
 func main(){
 
 	/* build the circuit for PriBank (simple version)
-	 b1new=b1-v12
-	 b2new=b2+v12
+	 b1new=b1-v12u
+	 b2new=b2+v12u
 	 total=b1new+b2new
-	 v12=v121*2+v122
-	 v12*(v12-1)=0
+	 v12u=v12u1*2+v12u2
+	 v12u*(v12u-1)=0
 	*/
 
 	
@@ -22,10 +22,10 @@ func main(){
 	    `func main(private b1, private b2,private b3,private b4,`+
 		`private b1new, private b2new, private b3new,private b4new,`+
 		`private t1,private t2,private t3,private t4,`+
-		`private v12,private v13,private v14,`+
-		`private v21,private v23,private v24u,`+
-		`private v31u,private v32u,`+
-		`private v43,`+
+		`private v12u,private v13u,private v14u,`+
+		`private v21u,private v23u,private v24u,`+
+		`private v31u,private v32u, private v34u,`+
+		`private v41u,private v42u, private v43u,`+
 		//transaction of user1
 		`private b1new1,private b1new2,private b1new3,private b1new4,private b1new5,private b1new6,private b1new7,private b1new8,`+
 		`private b2new1,private b2new2,private b2new3,private b2new4,private b2new5,private b2new6,private b2new7,private b2new8,`+
@@ -33,70 +33,74 @@ func main(){
 		`private b4new1,private b4new2,private b4new3,private b4new4,private b4new5,private b4new6,private b4new7,private b4new8,`+
 
 
-		`private v121,private v122,private v123,private v124,private v125,private v126,private v127,private v128,`+
-		`private v131,private v132,private v133,private v134,private v135,private v136,private v137,private v138,`+
-		`private v141,private v142,private v143,private v144,private v145,private v146,private v147,private v148,`+
+		`private v12u1,private v12u2,private v12u3,private v12u4,private v12u5,private v12u6,private v12u7,private v12u8,`+
+		`private v13u1,private v13u2,private v13u3,private v13u4,private v13u5,private v13u6,private v13u7,private v13u8,`+
+		`private v14u1,private v14u2,private v14u3,private v14u4,private v14u5,private v14u6,private v14u7,private v14u8,`+
 
-		`private v211,private v212,private v213,private v214,private v215,private v216,private v217,private v218,`+
-		`private v231,private v232,private v233,private v234,private v235,private v236,private v237,private v238,`+
+		`private v21u1,private v21u2,private v21u3,private v21u4,private v21u5,private v21u6,private v21u7,private v21u8,`+
+		`private v23u1,private v23u2,private v23u3,private v23u4,private v23u5,private v23u6,private v23u7,private v23u8,`+
 		`private v24u1,private v24u2,private v24u3,private v24u4,private v24u5,private v24u6,private v24u7,private v24u8,`+
 
 		`private v31u1,private v31u2,private v31u3,private v31u4,private v31u5,private v31u6,private v31u7,private v31u8,`+
         `private v32u1,private v32u2,private v32u3,private v32u4,private v32u5,private v32u6,private v32u7,private v32u8,`+
+        `private v34u1,private v34u2,private v34u3,private v34u4,private v34u5,private v34u6,private v34u7,private v34u8,`+
 
-		`private v431,private v432,private v433,private v434,private v435,private v436,private v437,private v438,`+
+        
+        `private v41u1,private v41u2,private v41u3,private v41u4,private v41u5,private v41u6,private v41u7,private v41u8,`+
+        `private v42u1,private v42u2,private v42u3,private v42u4,private v42u5,private v42u6,private v42u7,private v42u8,`+
+		`private v43u1,private v43u2,private v43u3,private v43u4,private v43u5,private v43u6,private v43u7,private v43u8,`+
 		`public total,public d1,public d2,public d3,public d4):`+
 		
-		// check v12, use variable z12b...
+		// check v12u, use variable z12b...
 		`
-		z12b1=v121*2
-		z12b2=z12b1+v122
+		z12b1=v12u1*2
+		z12b2=z12b1+v12u2
 		z12b3=z12b2*2
-		z12b4=z12b3+v123
+		z12b4=z12b3+v12u3
 		z12b5=z12b4*2
-		z12b6=z12b5+v124
+		z12b6=z12b5+v12u4
 		z12b7= z12b6*2
-		z12b8=z12b7+v125
+		z12b8=z12b7+v12u5
 		z12b9=z12b8*2
-		z12b10=z12b9+v126
+		z12b10=z12b9+v12u6
 		z12b11=z12b10*2
-		z12b12=z12b11+v127
+		z12b12=z12b11+v12u7
 		z12b13=z12b12*2
-		z12b14=z12b13+v128
-		equals(z12b14,v12)`+
-        //check range of v12.bits are 1 or 0, use variable z12o..a z12o..b
+		z12b14=z12b13+v12u8
+		equals(z12b14,v12u)`+
+        //check range of v12u.bits are 1 or 0, use variable z12o..a z12o..b
 		`
 		value0=0+0
-		z12o1a=1-v121
-		z12o1b=z12o1a*v121
+		z12o1a=1-v12u1
+		z12o1b=z12o1a*v12u1
 		equals(z12o1b,value0)
 
-		z12o2a=1-v122
-		z12o2b=z12o2a*v122
+		z12o2a=1-v12u2
+		z12o2b=z12o2a*v12u2
 		equals(z12o2b,value0)
 
-		z12o3a=1-v123
-		z12o3b=z12o3a*v123
+		z12o3a=1-v12u3
+		z12o3b=z12o3a*v12u3
 		equals(z12o3b,value0)
 
-		z12o4a=1-v124
-		z12o4b=z12o4a*v124
+		z12o4a=1-v12u4
+		z12o4b=z12o4a*v12u4
 		equals(z12o4b,value0)
 
-		z12o5a=1-v125
-		z12o5b=z12o5a*v125
+		z12o5a=1-v12u5
+		z12o5b=z12o5a*v12u5
 		equals(z12o5b,value0)
 
-		z12o6a=1-v126
-		z12o6b=z12o6a*v126
+		z12o6a=1-v12u6
+		z12o6b=z12o6a*v12u6
 		equals(z12o6b,value0)
 
-		z12o7a=1-v127
-		z12o7b=z12o7a*v127
+		z12o7a=1-v12u7
+		z12o7b=z12o7a*v12u7
 		equals(z12o7b,value0)
 
-		z12o8a=1-v128
-		z12o8b=z12o8a*v128
+		z12o8a=1-v12u8
+		z12o8b=z12o8a*v12u8
 		equals(z12o8b,value0)`+
 		//check v24u
 		`
@@ -150,55 +154,55 @@ func main(){
 		z24o8b=z24o8a*v24u8
 		equals(z24o8b,value0)`+
 
-		//check v13
+		//check v13u
 		`
-		z13b1=v131*2
-		z13b2=z13b1+v132
+		z13b1=v13u1*2
+		z13b2=z13b1+v13u2
 		z13b3=z13b2*2
-		z13b4=z13b3+v133
+		z13b4=z13b3+v13u3
 		z13b5=z13b4*2
-		z13b6=z13b5+v134
+		z13b6=z13b5+v13u4
 		z13b7= z13b6*2
-		z13b8=z13b7+v135
+		z13b8=z13b7+v13u5
 		z13b9=z13b8*2
-		z13b10=z13b9+v136
+		z13b10=z13b9+v13u6
 		z13b11=z13b10*2
-		z13b12=z13b11+v137
+		z13b12=z13b11+v13u7
 		z13b13=z13b12*2
-		z13b14=z13b13+v138
-		equals(z13b14,v13)`+
-		//check range of v13.bits are 1 or 0, use variable z13o..a z13o..b
+		z13b14=z13b13+v13u8
+		equals(z13b14,v13u)`+
+		//check range of v13u.bits are 1 or 0, use variable z13o..a z13o..b
 		`
-		z13o1a=1-v131
-		z13o1b=z13o1a*v131
+		z13o1a=1-v13u1
+		z13o1b=z13o1a*v13u1
 		equals(z13o1b,value0)
 
-		z13o2a=1-v132
-		z13o2b=z13o2a*v132
+		z13o2a=1-v13u2
+		z13o2b=z13o2a*v13u2
 		equals(z13o2b,value0)
 
-		z13o3a=1-v133
-		z13o3b=z13o3a*v133
+		z13o3a=1-v13u3
+		z13o3b=z13o3a*v13u3
 		equals(z13o3b,value0)
 
-		z13o4a=1-v134
-		z13o4b=z13o4a*v134
+		z13o4a=1-v13u4
+		z13o4b=z13o4a*v13u4
 		equals(z13o4b,value0)
 
-		z13o5a=1-v135
-		z13o5b=z13o5a*v135
+		z13o5a=1-v13u5
+		z13o5b=z13o5a*v13u5
 		equals(z13o5b,value0)
 
-		z13o6a=1-v136
-		z13o6b=z13o6a*v136
+		z13o6a=1-v13u6
+		z13o6b=z13o6a*v13u6
 		equals(z13o6b,value0)
 
-		z13o7a=1-v137
-		z13o7b=z13o7a*v137
+		z13o7a=1-v13u7
+		z13o7b=z13o7a*v13u7
 		equals(z13o7b,value0)
 
-		z13o8a=1-v138
-		z13o8b=z13o8a*v138
+		z13o8a=1-v13u8
+		z13o8b=z13o8a*v13u8
 		equals(z13o8b,value0)`+
 		//check b1new
 		`
@@ -403,145 +407,145 @@ func main(){
 		zb4newo8a=1-b4new8
 		zb4newo8b=zb4newo8a*b4new8
 		equals(zb4newo8b,value0)`+
-		// check v14, use variable z14b...
+		// check v14u, use variable z14b...
 		`
-		z14b1=v141*2
-		z14b2=z14b1+v142
+		z14b1=v14u1*2
+		z14b2=z14b1+v14u2
 		z14b3=z14b2*2
-		z14b4=z14b3+v143
+		z14b4=z14b3+v14u3
 		z14b5=z14b4*2
-		z14b6=z14b5+v144
+		z14b6=z14b5+v14u4
 		z14b7= z14b6*2
-		z14b8=z14b7+v145
+		z14b8=z14b7+v14u5
 		z14b9=z14b8*2
-		z14b10=z14b9+v146
+		z14b10=z14b9+v14u6
 		z14b11=z14b10*2
-		z14b12=z14b11+v147
+		z14b12=z14b11+v14u7
 		z14b13=z14b12*2
-		z14b14=z14b13+v148
-		equals(z14b14,v14)`+
-        //check range of v14.bits are 1 or 0, use variable z14o..a z14o..b
+		z14b14=z14b13+v14u8
+		equals(z14b14,v14u)`+
+        //check range of v14u.bits are 1 or 0, use variable z14o..a z14o..b
 		`
-		z14o1a=1-v141
-		z14o1b=z14o1a*v141
+		z14o1a=1-v14u1
+		z14o1b=z14o1a*v14u1
 		equals(z14o1b,value0)
 
-		z14o2a=1-v142
-		z14o2b=z14o2a*v142
+		z14o2a=1-v14u2
+		z14o2b=z14o2a*v14u2
 		equals(z14o2b,value0)
 
-		z14o3a=1-v143
-		z14o3b=z14o3a*v143
+		z14o3a=1-v14u3
+		z14o3b=z14o3a*v14u3
 		equals(z14o3b,value0)
 
-		z14o4a=1-v144
-		z14o4b=z14o4a*v144
+		z14o4a=1-v14u4
+		z14o4b=z14o4a*v14u4
 		equals(z14o4b,value0)
 
-		z14o5a=1-v145
-		z14o5b=z14o5a*v145
+		z14o5a=1-v14u5
+		z14o5b=z14o5a*v14u5
 		equals(z14o5b,value0)
 
-		z14o6a=1-v146
-		z14o6b=z14o6a*v146
+		z14o6a=1-v14u6
+		z14o6b=z14o6a*v14u6
 		equals(z14o6b,value0)
 
-		z14o7a=1-v147
-		z14o7b=z14o7a*v147
+		z14o7a=1-v14u7
+		z14o7b=z14o7a*v14u7
 		equals(z14o7b,value0)
 
-		z14o8a=1-v148
-		z14o8b=z14o8a*v148
+		z14o8a=1-v14u8
+		z14o8b=z14o8a*v14u8
 		equals(z14o8b,value0)`+
 
-		//check v21 
+		//check v21u 
 		`
-		z21b1=v211*2
-		z21b2=z21b1+v212
+		z21b1=v21u1*2
+		z21b2=z21b1+v21u2
 		z21b3=z21b2*2
-		z21b4=z21b3+v213
+		z21b4=z21b3+v21u3
 		z21b5=z21b4*2
-		z21b6=z21b5+v214
+		z21b6=z21b5+v21u4
 		z21b7= z21b6*2
-		z21b8=z21b7+v215
+		z21b8=z21b7+v21u5
 		z21b9=z21b8*2
-		z21b10=z21b9+v216
+		z21b10=z21b9+v21u6
 		z21b11=z21b10*2
-		z21b12=z21b11+v217
+		z21b12=z21b11+v21u7
 		z21b13=z21b12*2
-		z21b14=z21b13+v218
-		equals(z21b14,v21)`+
-		//check range of v21.bits are 1 or 0, use variable z21o..a z21o..b
+		z21b14=z21b13+v21u8
+		equals(z21b14,v21u)`+
+		//check range of v21u.bits are 1 or 0, use variable z21o..a z21o..b
 		`
-		z21o1a=1-v211
-		z21o1b=z21o1a*v211
+		z21o1a=1-v21u1
+		z21o1b=z21o1a*v21u1
 		equals(z21o1b,value0)
 
-		z21o2a=1-v212
-		z21o2b=z21o2a*v212
+		z21o2a=1-v21u2
+		z21o2b=z21o2a*v21u2
 		equals(z21o2b,value0)
 
-		z21o3a=1-v213
-		z21o3b=z21o3a*v213
+		z21o3a=1-v21u3
+		z21o3b=z21o3a*v21u3
 		equals(z21o3b,value0)
 
-		z21o4a=1-v214
-		z21o4b=z21o4a*v214
+		z21o4a=1-v21u4
+		z21o4b=z21o4a*v21u4
 		equals(z21o4b,value0)
 
-		z21o5a=1-v215
-		z21o5b=z21o5a*v215
+		z21o5a=1-v21u5
+		z21o5b=z21o5a*v21u5
 		equals(z21o5b,value0)
 
-		z21o6a=1-v216
-		z21o6b=z21o6a*v216
+		z21o6a=1-v21u6
+		z21o6b=z21o6a*v21u6
 		equals(z21o6b,value0)
 
-		z21o7a=1-v217
-		z21o7b=z21o7a*v217
+		z21o7a=1-v21u7
+		z21o7b=z21o7a*v21u7
 		equals(z21o7b,value0)
 
-		z21o8a=1-v218
-		z21o8b=z21o8a*v218
+		z21o8a=1-v21u8
+		z21o8b=z21o8a*v21u8
 		equals(z21o8b,value0)`+
         
-		// check v23, use variable z23b...
+		// check v23u, use variable z23b...
 		`
-		z23b1=v231*2
-		z23b2=z23b1+v232
+		z23b1=v23u1*2
+		z23b2=z23b1+v23u2
 		z23b3=z23b2*2
-		z23b4=z23b3+v233
+		z23b4=z23b3+v23u3
 		z23b5=z23b4*2
-		z23b6=z23b5+v234
+		z23b6=z23b5+v23u4
 		z23b7=z23b6*2
-		z23b8=z23b7+v235
+		z23b8=z23b7+v23u5
 		z23b9=z23b8*2
-		z23b10=z23b9+v236
+		z23b10=z23b9+v23u6
 		z23b11=z23b10*2
-		z23b12=z23b11+v237
+		z23b12=z23b11+v23u7
 		z23b13=z23b12*2
-		z23b14=z23b13+v238
-		equals(z23b14,v23)`+
-		//check range of v23.bits are 1 or 0, use variable z23o..a z23o..b
+		z23b14=z23b13+v23u8
+		equals(z23b14,v23u)`+
+		//check range of v23u.bits are 1 or 0, use variable z23o..a z23o..b
 		`
-		z23o1a=1-v231
-		z23o1b=z23o1a*v231
+		z23o1a=1-v23u1
+		z23o1b=z23o1a*v23u1
 		equals(z23o1b,value0)
 
-		z23o2a=1-v232
-		z23o2b=z23o2a*v232
+		z23o2a=1-v23u2
+		z23o2b=z23o2a*v23u2
 		equals(z23o2b,value0)
 
-		z23o3a=1-v233
-		z23o3b=z23o3a*v233
+		z23o3a=1-v23u3
+		z23o3b=z23o3a*v23u3
 		equals(z23o3b,value0)
 
-		z23o4a=1-v234
-		z23o4b=z23o4a*v234
+		z23o4a=1-v23u4
+		z23o4b=z23o4a*v23u4
 		equals(z23o4b,value0)
 
-		z23o5a=1-v235
-		z23o5b=z23o5a*v235
+		z23o5a=1-v23u5
+		z23o5b=z23o5a*v23u5
 		equals(z23o5b,value0)`+
 
 		//check v31u
@@ -645,89 +649,256 @@ func main(){
 		zv32uo8a=1-v32u8
 		zv32uo8b=zv32uo8a*v32u8
 		equals(zv32uo8b,value0)`+
-		// check v43, use variable z43b...
+
+		//check v34u
 		`
-		z43b1=v431*2
-		z43b2=z43b1+v432
+		z34b1=v34u1*2
+		z34b2=z34b1+v34u2
+		z34b3=z34b2*2
+		z34b4=z34b3+v34u3
+		z34b5=z34b4*2
+		z34b6=z34b5+v34u4
+		z34b7= z34b6*2
+		z34b8=z34b7+v34u5
+		z34b9=z34b8*2
+		z34b10=z34b9+v34u6
+		z34b11=z34b10*2
+		z34b12=z34b11+v34u7
+		z34b13=z34b12*2
+		z34b14=z34b13+v34u8
+		equals(z34b14,v34u)`+
+
+		//check range of v34u.bits are 1 or 0, use variable z34o..a z34o..b
+		`
+		z34o1a=1-v34u1
+		z34o1b=z34o1a*v34u1
+		equals(z34o1b,value0)
+
+		z34o2a=1-v34u2
+		z34o2b=z34o2a*v34u2
+		equals(z34o2b,value0)
+
+		z34o3a=1-v34u3
+		z34o3b=z34o3a*v34u3
+		equals(z34o3b,value0)
+
+		z34o4a=1-v34u4
+		z34o4b=z34o4a*v34u4
+		equals(z34o4b,value0)
+
+		z34o5a=1-v34u5
+		z34o5b=z34o5a*v34u5
+		equals(z34o5b,value0)
+
+		z34o6a=1-v34u6
+		z34o6b=z34o6a*v34u6
+		equals(z34o6b,value0)
+
+		z34o7a=1-v34u7
+		z34o7b=z34o7a*v34u7
+		equals(z34o7b,value0)
+
+		z34o8a=1-v34u8
+		z34o8b=z34o8a*v34u8
+		equals(z34o8b,value0)`+
+		// check v43u, use variable z43b...
+		`
+		z43b1=v43u1*2
+		z43b2=z43b1+v43u2
 		z43b3=z43b2*2
-		z43b4=z43b3+v433
+		z43b4=z43b3+v43u3
 		z43b5=z43b4*2
-		z43b6=z43b5+v434
+		z43b6=z43b5+v43u4
 		z43b7= z43b6*2
-		z43b8=z43b7+v435
+		z43b8=z43b7+v43u5
 		z43b9=z43b8*2
-		z43b10=z43b9+v436
+		z43b10=z43b9+v43u6
 		z43b11=z43b10*2
-		z43b12=z43b11+v437
+		z43b12=z43b11+v43u7
 		z43b13=z43b12*2
-		z43b14=z43b13+v438
-		equals(z43b14,v43)`+
-        //check range of v43.bits are 1 or 0, use variable z43o..a z43o..b
+		z43b14=z43b13+v43u8
+		equals(z43b14,v43u)`+
+
+		//check v41u
 		`
-		z43o1a=1-v431
-		z43o1b=z43o1a*v431
+		z41b1=v41u1*2
+		z41b2=z41b1+v41u2
+		z41b3=z41b2*2
+		z41b4=z41b3+v41u3
+		z41b5=z41b4*2
+		z41b6=z41b5+v41u4
+		z41b7= z41b6*2
+		z41b8=z41b7+v41u5
+		z41b9=z41b8*2
+		z41b10=z41b9+v41u6
+		z41b11=z41b10*2
+		z41b12=z41b11+v41u7
+		z41b13=z41b12*2
+		z41b14=z41b13+v41u8
+		equals(z41b14,v41u)`+
+
+		//check range of v41u.bits are 1 or 0, use variable z41o..a z41o..b
+		`
+		z41o1a=1-v41u1
+		z41o1b=z41o1a*v41u1
+		equals(z41o1b,value0)
+
+		z41o2a=1-v41u2
+		z41o2b=z41o2a*v41u2
+		equals(z41o2b,value0)
+
+		z41o3a=1-v41u3
+		z41o3b=z41o3a*v41u3
+		equals(z41o3b,value0)
+
+		z41o4a=1-v41u4
+		z41o4b=z41o4a*v41u4
+		equals(z41o4b,value0)
+
+		z41o5a=1-v41u5
+		z41o5b=z41o5a*v41u5
+		equals(z41o5b,value0)
+
+		z41o6a=1-v41u6
+		z41o6b=z41o6a*v41u6
+		equals(z41o6b,value0)
+
+		z41o7a=1-v41u7
+		z41o7b=z41o7a*v41u7
+		equals(z41o7b,value0)
+
+		z41o8a=1-v41u8
+		z41o8b=z41o8a*v41u8
+		equals(z41o8b,value0)`+
+
+		//check v42u
+		`
+		z42b1=v42u1*2
+		z42b2=z42b1+v42u2
+		z42b3=z42b2*2
+		z42b4=z42b3+v42u3
+		z42b5=z42b4*2
+		z42b6=z42b5+v42u4
+		z42b7= z42b6*2
+		z42b8=z42b7+v42u5
+		z42b9=z42b8*2
+		z42b10=z42b9+v42u6
+		z42b11=z42b10*2
+		z42b12=z42b11+v42u7
+		z42b13=z42b12*2
+		z42b14=z42b13+v42u8
+		equals(z42b14,v42u)`+
+
+		//check range of v42u.bits are 1 or 0, use variable z42o..a z42o..b
+		`
+		z42o1a=1-v42u1
+		z42o1b=z42o1a*v42u1
+		equals(z42o1b,value0)
+
+		z42o2a=1-v42u2
+		z42o2b=z42o2a*v42u2
+		equals(z42o2b,value0)
+
+		z42o3a=1-v42u3
+		z42o3b=z42o3a*v42u3
+		equals(z42o3b,value0)
+
+		z42o4a=1-v42u4
+		z42o4b=z42o4a*v42u4
+		equals(z42o4b,value0)
+
+		z42o5a=1-v42u5
+		z42o5b=z42o5a*v42u5
+		equals(z42o5b,value0)
+
+		z42o6a=1-v42u6
+		z42o6b=z42o6a*v42u6
+		equals(z42o6b,value0)
+
+		z42o7a=1-v42u7
+		z42o7b=z42o7a*v42u7
+		equals(z42o7b,value0)
+
+		z42o8a=1-v42u8
+		z42o8b=z42o8a*v42u8
+		equals(z42o8b,value0)`+
+        //check range of v43u.bits are 1 or 0, use variable z43o..a z43o..b
+		`
+		z43o1a=1-v43u1
+		z43o1b=z43o1a*v43u1
 		equals(z43o1b,value0)
 
-		z43o2a=1-v432
-		z43o2b=z43o2a*v432
+		z43o2a=1-v43u2
+		z43o2b=z43o2a*v43u2
 		equals(z43o2b,value0)
 
-		z43o3a=1-v433
-		z43o3b=z43o3a*v433
+		z43o3a=1-v43u3
+		z43o3b=z43o3a*v43u3
 		equals(z43o3b,value0)
 
-		z43o4a=1-v434
-		z43o4b=z43o4a*v434
+		z43o4a=1-v43u4
+		z43o4b=z43o4a*v43u4
 		equals(z43o4b,value0)
 
-		z43o5a=1-v435
-		z43o5b=z43o5a*v435
+		z43o5a=1-v43u5
+		z43o5b=z43o5a*v43u5
 		equals(z43o5b,value0)
 
-		z43o6a=1-v436
-		z43o6b=z43o6a*v436
+		z43o6a=1-v43u6
+		z43o6b=z43o6a*v43u6
 		equals(z43o6b,value0)
 
-		z43o7a=1-v437
-		z43o7b=z43o7a*v437
+		z43o7a=1-v43u7
+		z43o7b=z43o7a*v43u7
 		equals(z43o7b,value0)
 
-		z43o8a=1-v438
-		z43o8b=z43o8a*v438
+		z43o8a=1-v43u8
+		z43o8b=z43o8a*v43u8
 		equals(z43o8b,value0)`+
 		//check update u1, substitution use u1bSub... addition use u1bAdd...
 		`
-		u1bSub1=b1-v12
-		u1bSub2=u1bSub1-v13
-		u1bSub3=u1bSub2-v14
+		u1bSub1=b1-v12u
+		u1bSub2=u1bSub1-v13u
+		u1bSub3=u1bSub2-v14u
 
 
-		u1bAdd1=u1bSub3+v21
+		u1bAdd1=u1bSub3+v21u
 		u1bAdd2=u1bAdd1+v31u
-		equals(u1bAdd2,b1new)
+		u1bAdd3=u1bAdd2+v41u
+		equals(u1bAdd3,b1new)
 		`+
 
         //check update u2, substitution use u2bSub... addition use u2bAdd...
 		`
-		u2bSub1 = b2-v21
-		u2bSub2 = u2bSub1-v23
+		u2bSub1 = b2-v21u
+		u2bSub2 = u2bSub1-v23u
 		u2bSub3 = u2bSub2-v24u
 
-		u2bAdd1=u2bSub3+v12
+		u2bAdd1=u2bSub3+v12u
 		u2bAdd2=u2bAdd1+v32u
-		equals(u2bAdd2,b2new)`+
+		u2bAdd3=u2bAdd2+v42u
+		equals(u2bAdd3,b2new)`+
 
         //check update u3, substitution use u3bSub... addition use u3bAdd...
 		`
 		u3bSub1 = b3-v31u
         u3bSub2 = u3bSub1-v32u
+        u3bSub3 = u2bSub2-v34u 
 
-		u3bAdd1 = b3+v23
-		u3bAdd2=u3bAdd1+v43
-		equals(u3bAdd2,b3new)
+		u3bAdd1 = u3bSub3+v13u
+		u3bAdd2=u3bAdd1+v23u
+		u3bAdd3=u3bAdd2+v43u
+		equals(u3bAdd3,b3new)`+
+		
+        `
+		u4bSub1 = b3-v43u
+        u4bSub2 = u4bSub1-v42u
+        u4bSub3 = u2bSub2-v41u 
 
-		s5 =b4-v43
-		equals(s5,b4new)`+
+		u4bAdd1 = u4bSub3+v14u
+		u4bAdd2=u4bAdd1+v24u
+		u4bAdd3=u4bAdd2+v34u
+		equals(u4bAdd3,b3new)`+
 
         //check total balance use variable B
 		`
