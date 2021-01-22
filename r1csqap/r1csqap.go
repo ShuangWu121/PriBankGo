@@ -7,6 +7,7 @@ import (
     "time"
 	"github.com/arnaucube/go-snark/fields"
 	"runtime"
+	"sync"
 	
 )
 
@@ -162,12 +163,13 @@ func (pf PolynomialField) LagrangeInterpolation(v []*big.Int) []*big.Int {
 
 func ParalleUVW(a [][]*big.Int,X uint8,pf PolynomialField)([][]*big.Int){
     var alphas [][]*big.Int
-	for i := 0; i < len(a); i++ {
+    for i := 0; i < len(a); i++ {
 		alphas = append(alphas, pf.LagrangeInterpolation(a[i]))
 	}
 	fmt.Println("Compute ",string(X)," done")
 	return alphas
 }
+
 
 
 // R1CSToQAP converts the R1CS values to the QAP values
@@ -176,53 +178,62 @@ func (pf PolynomialField) R1CSToQAP(a, b, c [][]*big.Int) ([][]*big.Int, [][]*bi
 	aT := Transpose(a)
 	bT := Transpose(b)
 	cT := Transpose(c)
-	DoneU:=false
-	DoneV:=false
-	DoneW:=false
-	DoneZ:=false
 
-	runtime.GOMAXPROCS(4)
+	var wg sync.WaitGroup
+	runtime.GOMAXPROCS(1)
+
 	var alphas [][]*big.Int
-	/*for i := 0; i < len(aT); i++ {
-		alphas = append(alphas, pf.LagrangeInterpolation(aT[i]))
+
+	var tru [][]*big.Int
+   
+ 
+    for i := 0; i < len(aT); i++ {
+			tru=append(tru,[]*big.Int{big.NewInt(int64(0))})
 	}
-    fmt.Println("Compute ux[i] done")*/
-    go func(){
-    alphas=ParalleUVW(aT,'u',pf)
-    DoneU=true
+	fmt.Println("what happen,tru len",len(tru),len(aT))
+    for i := 0; i < len(aT); i++ {
+    	wg.Add(1)
+    	a:=i
+		go func(){
+			
+			//fmt.Println("index",a,"start")
+			tru[a]=pf.LagrangeInterpolation(aT[a])
+			defer wg.Done()
+		}()
+	}
+	
     
-    }()
+
+    /*
+    go func(){
+    	
+    	alphas=ParalleUVW(aT,'u',pf)
+        wg.Done()  
+    }()*/
 
 	var betas [][]*big.Int
-	/*for i := 0; i < len(bT); i++ {
-		betas = append(betas, pf.LagrangeInterpolation(bT[i]))
-	}
-	fmt.Println("Compute vx[i] done")*/
-
+    wg.Add(1)
 	 go func(){
-    betas=ParalleUVW(bT,'v',pf)
-    DoneV=true
-    
+	 	
+  	  	betas=ParalleUVW(bT,'v',pf)
+    	wg.Done()   
     }()
 
 
 
 	var gammas [][]*big.Int
-	/*for i := 0; i < len(cT); i++ {
-		gammas = append(gammas, pf.LagrangeInterpolation(cT[i]))
-	}
-	fmt.Println("Compute wx[i] done")*/
-
+	
+    wg.Add(1)
 	go func(){
-    gammas=ParalleUVW(cT,'w',pf)
-    DoneW=true
+   	 	gammas=ParalleUVW(cT,'w',pf)
+    	wg.Done()
     
     }()
 
 	
 	z := []*big.Int{big.NewInt(int64(1))}
 
-
+    wg.Add(1)
 	go func(){
 		for i := 0; i < len(a); i++ {
 			z = pf.Mul(
@@ -234,12 +245,15 @@ func (pf PolynomialField) R1CSToQAP(a, b, c [][]*big.Int) ([][]*big.Int, [][]*bi
 				})
 
 		}
-	DoneZ=true
+	 wg.Done()
     }()
 
-    for(DoneU==false||DoneV==false||DoneW==false||DoneZ==false){
-		time.Sleep(1*time.Second)
+    wg.Wait()
+
+    for i := 0; i < len(aT); i++ {
+    	alphas = append(alphas, tru[i])
 	}
+
 	elapsed := time.Since(start)
 	fmt.Println("Compute QAP done,used ",elapsed)
 
