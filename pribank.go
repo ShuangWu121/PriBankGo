@@ -100,7 +100,7 @@ func InputsGenerator(f fields.Fq)([]*big.Int,[]*big.Int,[]*big.Int){
     privateSignals=append(privateSignals,Txs...)
     privateInputs=append(privateInputs,privateSignals...)
     privateSignals=append(privateSignals,AddTxValueBits([]*big.Int{b1new,b2new,b3new,b4new})...)
-    privateSignals=append(privateSignals,AddTxValueBits([]*big.Int{v12,v13,v14})...)
+    privateSignals=append(privateSignals,AddTxValueBits(Txs)...)
 
     //public inputs
 	total := big.NewInt(int64(339))
@@ -169,8 +169,8 @@ func main(){
     
 
 
-    fmt.Println("\nR1CS is correct? (result is valid when the inputs are valid) ",r1csqap.Check_r1cs(wires,u,v,w,polyf))
-    fmt.Println("\nQAP is correct? (result is valid when the inputs are valid) ",r1csqap.Check_QAP(wires,ux,vx,wx,u,v,w,polyf))
+   // fmt.Println("\nR1CS is correct? (result is valid when the inputs are valid) ",r1csqap.Check_r1cs(wires,u,v,w,polyf))
+    //fmt.Println("\nQAP is correct? (result is valid when the inputs are valid) ",r1csqap.Check_QAP(wires,ux,vx,wx,u,v,w,polyf))
 
 
     
