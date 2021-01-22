@@ -6,6 +6,8 @@ import (
 	"fmt"
     "time"
 	"github.com/arnaucube/go-snark/fields"
+	"runtime"
+	
 )
 
 // Transpose transposes the *big.Int matrix
@@ -158,41 +160,90 @@ func (pf PolynomialField) LagrangeInterpolation(v []*big.Int) []*big.Int {
 	return r
 }
 
+func ParalleUVW(a [][]*big.Int,X uint8,pf PolynomialField)([][]*big.Int){
+    var alphas [][]*big.Int
+	for i := 0; i < len(a); i++ {
+		alphas = append(alphas, pf.LagrangeInterpolation(a[i]))
+	}
+	fmt.Println("Compute ",string(X)," done")
+	return alphas
+}
+
+
 // R1CSToQAP converts the R1CS values to the QAP values
 func (pf PolynomialField) R1CSToQAP(a, b, c [][]*big.Int) ([][]*big.Int, [][]*big.Int, [][]*big.Int, []*big.Int) {
 	start := time.Now()
 	aT := Transpose(a)
 	bT := Transpose(b)
 	cT := Transpose(c)
+	DoneU:=false
+	DoneV:=false
+	DoneW:=false
+	DoneZ:=false
+
+	runtime.GOMAXPROCS(4)
 	var alphas [][]*big.Int
-	for i := 0; i < len(aT); i++ {
+	/*for i := 0; i < len(aT); i++ {
 		alphas = append(alphas, pf.LagrangeInterpolation(aT[i]))
 	}
-    fmt.Println("Compute ux[i] done")
+    fmt.Println("Compute ux[i] done")*/
+    go func(){
+    alphas=ParalleUVW(aT,'u',pf)
+    DoneU=true
+    
+    }()
+
 	var betas [][]*big.Int
-	for i := 0; i < len(bT); i++ {
+	/*for i := 0; i < len(bT); i++ {
 		betas = append(betas, pf.LagrangeInterpolation(bT[i]))
 	}
-	fmt.Println("Compute vx[i] done")
+	fmt.Println("Compute vx[i] done")*/
+
+	 go func(){
+    betas=ParalleUVW(bT,'v',pf)
+    DoneV=true
+    
+    }()
+
+
+
 	var gammas [][]*big.Int
-	for i := 0; i < len(cT); i++ {
+	/*for i := 0; i < len(cT); i++ {
 		gammas = append(gammas, pf.LagrangeInterpolation(cT[i]))
 	}
-	fmt.Println("Compute wx[i] done")
-	z := []*big.Int{big.NewInt(int64(1))}
-	
-	for i := 0; i < len(a); i++ {
-		z = pf.Mul(
-			z,
-			[]*big.Int{
-				pf.F.Neg(
-					big.NewInt(int64(i+1))),
-				big.NewInt(int64(1)),
-			})
+	fmt.Println("Compute wx[i] done")*/
 
+	go func(){
+    gammas=ParalleUVW(cT,'w',pf)
+    DoneW=true
+    
+    }()
+
+	
+	z := []*big.Int{big.NewInt(int64(1))}
+
+
+	go func(){
+		for i := 0; i < len(a); i++ {
+			z = pf.Mul(
+				z,
+				[]*big.Int{
+					pf.F.Neg(
+						big.NewInt(int64(i+1))),
+						big.NewInt(int64(1)),
+				})
+
+		}
+	DoneZ=true
+    }()
+
+    for(DoneU==false||DoneV==false||DoneW==false||DoneZ==false){
+		time.Sleep(1*time.Second)
 	}
 	elapsed := time.Since(start)
 	fmt.Println("Compute QAP done,used ",elapsed)
+
+	
 	
 	return alphas, betas, gammas, z
 }
