@@ -70,11 +70,11 @@ func InputsGenerator(f fields.Fq)([]*big.Int,[]*big.Int,[]*big.Int){
 
 	b1 := big.NewInt(int64(100))
 	b2 := big.NewInt(int64(34))
-	b3 := big.NewInt(int64(2000))
+	b3 := big.NewInt(int64(200))
 	b4 := big.NewInt(int64(5))
 	b1new := big.NewInt(int64(93))
 	b2new := big.NewInt(int64(31))
-	b3new := big.NewInt(int64(2010))
+	b3new := big.NewInt(int64(210))
 	b4new := big.NewInt(int64(5))
 	t1 := f.Affine(big.NewInt(int64(388695)))
 	t2 := f.Affine(big.NewInt(int64(3433335)))
@@ -86,17 +86,24 @@ func InputsGenerator(f fields.Fq)([]*big.Int,[]*big.Int,[]*big.Int){
 	v12 := big.NewInt(int64(7))
     v13 := big.NewInt(int64(0))
     v14 := big.NewInt(int64(0))
-
+    
+    v21 := big.NewInt(int64(0))
     v23:= big.NewInt(int64(10))
+    v24:= big.NewInt(int64(0))
+
+    v31:= big.NewInt(int64(0))
+    v32:= big.NewInt(int64(0))
+
     v43 := big.NewInt(int64(0))
-    Txs:=[]*big.Int{v12,v13,v14,v23,v43}
+    Txs:=[]*big.Int{v12,v13,v14,v21,v23,v24,v31,v32,v43}
 
     privateSignals=append(privateSignals,Txs...)
     privateInputs=append(privateInputs,privateSignals...)
+    privateSignals=append(privateSignals,AddTxValueBits([]*big.Int{b1new,b2new,b3new,b4new})...)
     privateSignals=append(privateSignals,AddTxValueBits(Txs)...)
 
     //public inputs
-	total := big.NewInt(int64(2139))
+	total := big.NewInt(int64(339))
 	d1:=f.Add(t1,b1new)
 	d2:=f.Add(t2,b2new)
 	d3:=f.Add(t3,b3new)
@@ -126,19 +133,12 @@ func main(){
 	N, _ := new(big.Int).SetString("115792089237316195423570985008687907852837564279074904382605163141518161494337", 10)
 	f := fields.NewFq(N)
 	polyf := r1csqap.NewPolynomialField(f)
-    
-
-    // R1CS to QAP, compute the polynomials 
-    fmt.Println("\ncompute QAP ...")
-
-	ux, vx, wx, zx := polyf.R1CSToQAP(u, v, w)
 
 
     // generate private inputs
     fmt.Println("\nGenerate private inputs")
 
-    
-    //privateSignals include range proof bits.
+	//privateSignals include range proof bits.
 	privateInputs,privateSignals,publicSignals:=InputsGenerator(f)
     
 	fmt.Println("privateInputs are:",privateInputs)
@@ -155,9 +155,22 @@ func main(){
 	fmt.Println("wires values:",wires)
 	fmt.Println("\nsignals are :",circuit.Signals)
 
+    
 
-   // fmt.Println("\nR1CS is correct? (result is valid when the inputs are valid) ",r1csqap.Check_r1cs(wires,u,v,w,polyf))
-   // fmt.Println("\nQAP is correct? (result is valid when the inputs are valid) ",r1csqap.Check_QAP(wires,ux,vx,wx,u,v,w,polyf))
+    // R1CS to QAP, compute the polynomials 
+    fmt.Println("\ncompute QAP ...")
+
+	ux, vx, wx, zx := polyf.R1CSToQAP(u, v, w)
+
+
+    
+
+    
+    
+
+
+    fmt.Println("\nR1CS is correct? (result is valid when the inputs are valid) ",r1csqap.Check_r1cs(wires,u,v,w,polyf))
+    fmt.Println("\nQAP is correct? (result is valid when the inputs are valid) ",r1csqap.Check_QAP(wires,ux,vx,wx,u,v,w,polyf))
 
 
     
