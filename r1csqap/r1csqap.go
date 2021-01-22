@@ -181,7 +181,7 @@ func (pf PolynomialField) R1CSToQAP(a, b, c [][]*big.Int) ([][]*big.Int, [][]*bi
 	DoneW:=false
 	DoneZ:=false
 
-	runtime.GOMAXPROCS(4)
+	runtime.GOMAXPROCS(8)
 	var alphas [][]*big.Int
 	/*for i := 0; i < len(aT); i++ {
 		alphas = append(alphas, pf.LagrangeInterpolation(aT[i]))
