@@ -166,7 +166,9 @@ func main(){
 	ux, vx, wx, zx := polyf.R1CSToQAP(u, v, w)
 
 
-    
+
+
+    fmt.Println("\nnumbers of gates:",len(u))
 
     
     
