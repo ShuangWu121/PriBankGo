@@ -15,6 +15,8 @@ import(
 	"github.com/ethereum/go-ethereum/crypto"
 	"crypto/rand"
 	"time"
+	"runtime"
+	"sync"
 
 )
 
@@ -380,15 +382,26 @@ func main(){
     /////////////////verifer check
 
     start := time.Now()
+    
+    var wg sync.WaitGroup
+	runtime.GOMAXPROCS(runtime.NumCPU())
 
     fmt.Println("\nVerification:")
 
     //Verifier computes ca
-    fmt.Println("validation A:",zkproof.ZKverifyPdsComits_PubVec(hi,U[len(publicSignals)+1:pos_inner],pfA,H))
-    fmt.Println("bulletproof check A: ",zkproof.ZKverifyPdsVec_PubVec(gi,G,H,commit_inner,c_u_inner,zkproof.Padding(U[pos_inner:]),polyf,pf_bulletproof_u))
-    ca:=zkproof.CurvePointVecMult(c_inputs,U[len(publicSignals)+1:pos_inner])
-	ca,_=zkproof.CurveSub(ca,pfA.Omega)
-	ca,_=zkproof.CurveAdd(ca,c_u_inner)
+
+    wg.Add(1)
+    var ca zkproof.CurvePoint
+    go func(){
+
+    	fmt.Println("validation A:",zkproof.ZKverifyPdsComits_PubVec(hi,U[len(publicSignals)+1:pos_inner],pfA,H))
+    	fmt.Println("bulletproof check A: ",zkproof.ZKverifyPdsVec_PubVec(gi,G,H,commit_inner,c_u_inner,zkproof.Padding(U[pos_inner:]),polyf,pf_bulletproof_u))
+   
+    	ca=zkproof.CurvePointVecMult(c_inputs,U[len(publicSignals)+1:pos_inner])
+		ca,_=zkproof.CurveSub(ca,pfA.Omega)
+		ca,_=zkproof.CurveAdd(ca,c_u_inner)
+	
+   
 
 	for i:=0;i<len(publicSignals)+1;i++{
 		var temp zkproof.CurvePoint
@@ -396,13 +409,20 @@ func main(){
 	   }else{ temp,_=zkproof.CurveScalarMult(G,polyf.F.Mul(U[i],publicSignals[i-1]))}
 		ca,_=zkproof.CurveAdd(ca,temp)
 
+
 	}
+	wg.Done()
+    }()
 	
 
     //Verifier computes cb
+    wg.Add(1)
+    var cb zkproof.CurvePoint
+    go func(){
+
     fmt.Println("validation B:",zkproof.ZKverifyPdsComits_PubVec(hi,V[len(publicSignals)+1:pos_inner],pfB,H))
     fmt.Println("bulletproof check B: ",zkproof.ZKverifyPdsVec_PubVec(gi,G,H,commit_inner,c_v_inner,zkproof.Padding(V[pos_inner:]),polyf,pf_bulletproof_v))
-    cb:=zkproof.CurvePointVecMult(c_inputs,V[len(publicSignals)+1:pos_inner])
+    cb=zkproof.CurvePointVecMult(c_inputs,V[len(publicSignals)+1:pos_inner])
 	cb,_=zkproof.CurveSub(cb,pfB.Omega)
 	cb,_=zkproof.CurveAdd(cb,c_v_inner)
 
@@ -412,15 +432,19 @@ func main(){
 	   }else{ temp,_=zkproof.CurveScalarMult(G,polyf.F.Mul(V[i],publicSignals[i-1]))}
 		cb,_=zkproof.CurveAdd(cb,temp)
 	}
-	
+	wg.Done()
+	}()
    
 
 
     //Verifier computes cw
+    wg.Add(1)
+    var cw zkproof.CurvePoint
+    go func(){
     fmt.Println("validation C:",zkproof.ZKverifyPdsComits_PubVec(hi,W[len(publicSignals)+1:pos_inner],pfW,H))
 	fmt.Println("bulletproof check W: ",zkproof.ZKverifyPdsVec_PubVec(gi,G,H,commit_inner,c_w_inner,zkproof.Padding(W[pos_inner:]),polyf,pf_bulletproof_w))
 	
-    cw:=zkproof.CurvePointVecMult(c_inputs,W[len(publicSignals)+1:pos_inner])
+    cw=zkproof.CurvePointVecMult(c_inputs,W[len(publicSignals)+1:pos_inner])
 	cw,_=zkproof.CurveSub(cw,pfW.Omega)
 	cw,_=zkproof.CurveAdd(cw,c_w_inner)
 
@@ -430,14 +454,22 @@ func main(){
 	   }else{ temp,_=zkproof.CurveScalarMult(G,polyf.F.Mul(W[i],publicSignals[i-1]))}
 		cw,_=zkproof.CurveAdd(cw,temp)
 	}
+	wg.Done()
     
-    
+    }()
     //Verifier computes commitment for hx*zx
+
+    wg.Add(1)
+
+    go func(){
                                                             
     fmt.Println("validation HZ:",zkproof.ZKverifyPdsVec_PubVec(hi_hx,G,H,ch,c_hz,zkproof.Padding(X),polyf,pf_bulletproof_hxzx))
+    wg.Done()
 	
-
+    }()
     //chcek is chz*cw is the product of ca cb
+
+    wg.Wait()
 
     c_right,_:=zkproof.CurveAdd(c_hz,cw)
     fmt.Println("product check: com(A*B)==com(C+HZ)",zkproof.ZkverifyPdsProduct(ca,cb,c_right,G,H,pfProduct,polyf))
