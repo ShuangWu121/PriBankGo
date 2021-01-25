@@ -137,6 +137,7 @@ func main() {
     
 
     //check the sum of transaction bits
+    
     for i:=1;i<users;i++{
 
         for j:=1;j<users;j++{
@@ -182,6 +183,7 @@ func main() {
 
         }
     }
+    
 
      _, err2 = f.WriteString("value0=0+0\n")
 
@@ -190,6 +192,7 @@ func main() {
     }
 
     //check transaction bits are 1 or 0
+    
     for i:=1;i<users;i++{
 
         for j:=1;j<users;j++{
@@ -255,7 +258,7 @@ func main() {
                     s++
         }
 
-        msg := fmt.Sprintf("equals(zb%dnew%d,b%dnew) \n \n", i,s-1,i)
+        msg := fmt.Sprintf("equals(zb%dnewb%d,b%dnew) \n \n", i,s-1,i)
             _, err2 := f.WriteString(msg)
             if err2 != nil {
                         log.Fatal(err2)
@@ -265,6 +268,7 @@ func main() {
     }
 
    //check new balance bits are 0 or 1
+   
 
    for i:=1;i<users;i++{
 
@@ -295,6 +299,7 @@ func main() {
     }
     
     //check new balance updates
+    
 
     for i:=1;i<users;i++{
         s:=1
@@ -350,6 +355,7 @@ func main() {
     }
 
     }
+    
 
    //check total balance
     s:=1
