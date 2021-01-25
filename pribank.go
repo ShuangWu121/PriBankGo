@@ -50,7 +50,7 @@ func AddTxValueBits(txs []*big.Int) []*big.Int{
 func circuit_init()(*circuitcompiler.Circuit){
 
 	// parse the circuit 
-	circuitFile, _ := os.Open("cir.txt")
+	circuitFile, _ := os.Open("circuit.txt")
 
 
 
