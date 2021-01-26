@@ -70,6 +70,90 @@ func InputsGenerator(f fields.Fq)([]*big.Int,[]*big.Int,[]*big.Int){
 	var privateSignals []*big.Int //include the private signals for range proof
     var privateInputs []*big.Int
 
+    const users=2
+    
+    //generate the original balance
+    total:=big.NewInt(int64(0))
+    for i:=1;i<users+1;i++{
+    	balance,_:=rand.Int(rand.Reader,big.NewInt(int64(255)))
+    	total=f.Add(total,balance)
+    	privateSignals=append(privateSignals,balance)
+    }
+
+    fmt.Println("old balances are:",privateSignals)
+
+    //generate transactions
+    var tx [users+1][users+1]*big.Int
+    for i:=0;i<users+1;i++{
+    	for j:=0;j<users+1;j++{
+    		tx[i][j]=big.NewInt(int64(0))
+    	}
+    }
+    
+
+    //user i make transaction to j, that stores in tx[i][j]
+    var TxsArray []*big.Int
+    var subResult []*big.Int
+    for i:=1;i<users+1;i++{
+    	sum:=big.NewInt(int64(0))
+    	for j:=1;j<users+1;j++{
+          if i!=j {
+             trans,_:=rand.Int(rand.Reader,f.Sub(privateSignals[i-1],sum))
+             tx[i][j]=trans
+             sum=f.Add(sum,trans)
+             TxsArray=append(TxsArray,trans)
+          }
+        }
+        subResult=append(subResult,sum)
+    } 
+
+    fmt.Println("transactions are:",tx)
+
+    //compute new balances
+    for j:=1;j<users+1;j++{
+    	for i:=1;i<users+1;i++{
+    		subResult[j-1]=f.Add(subResult[j-1],tx[i][j])
+    	}
+    }
+    fmt.Println("new balances are:",subResult)
+    privateSignals=append(privateSignals,subResult...)
+
+    //generate randomness t
+    var d []*big.Int
+    var t []*big.Int
+    N, _ := new(big.Int).SetString("115792089237316195423570985008687907852837564279074904382605163141518161494337", 10)
+    for i:=1;i<users+1;i++{
+    	temp,_:=rand.Int(rand.Reader,N)
+    	t=append(t,temp)
+    	d=append(d,f.Add(subResult[i-1],temp))
+
+    }
+    privateSignals=append(privateSignals,t...)
+
+    privateSignals=append(privateSignals,TxsArray...)
+
+    privateInputs=append(privateInputs,privateSignals...)
+
+
+
+    privateSignals=append(privateSignals,AddTxValueBits(subResult)...)
+
+    fmt.Println("add new balances bits",privateSignals)
+    privateSignals=append(privateSignals,AddTxValueBits(TxsArray)...)
+    fmt.Println("private signals length:",len(privateSignals))
+
+    //public inputs
+
+    
+    var publicSignals []*big.Int
+    publicSignals=append(publicSignals,total)
+    publicSignals=append(publicSignals,d...)
+    fmt.Println("publicSignals length",t)
+
+     
+
+    
+   /*
 	b1 := big.NewInt(int64(100))
 	b2 := big.NewInt(int64(34))
 	b3 := big.NewInt(int64(200))
@@ -107,13 +191,15 @@ func InputsGenerator(f fields.Fq)([]*big.Int,[]*big.Int,[]*big.Int){
     privateSignals=append(privateSignals,AddTxValueBits([]*big.Int{b1new,b2new,b3new,b4new})...)
     privateSignals=append(privateSignals,AddTxValueBits(Txs)...)
 
+    fmt.Println("private signals length:",len(privateSignals))
+
     //public inputs
 	total := big.NewInt(int64(339))
 	d1:=f.Add(t1,b1new)
 	d2:=f.Add(t2,b2new)
 	d3:=f.Add(t3,b3new)
 	d4:=f.Add(t4,b4new)
-    publicSignals := []*big.Int{total,d1,d2,d3,d4}
+    publicSignals := []*big.Int{total,d1,d2,d3,d4}*/
 
     return privateInputs,privateSignals,publicSignals
 
@@ -475,6 +561,11 @@ func main(){
     fmt.Println("product check: com(A*B)==com(C+HZ)",zkproof.ZkverifyPdsProduct(ca,cb,c_right,G,H,pfProduct,polyf))
     elapsed := time.Since(start)
     fmt.Println("Verification done,used ",elapsed)
+
+    reader := bufio.NewReader(os.Stdin)
+    fmt.Print("The process is done, press any key and enter to stop: ")
+    city, _ := reader.ReadString('\n')
+    fmt.Print("You press " + city)
 
     
 
