@@ -22,7 +22,7 @@ func main() {
         log.Fatal(err2)
     }
 
-    users:=4
+    users:=2
     bitsrange:=8
 
     users=users+1
