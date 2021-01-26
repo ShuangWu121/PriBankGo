@@ -282,6 +282,9 @@ func main(){
     //compute Ax=sum{a_iu_i(x)}, Bx=sum{a_iv_i(x)}, Cx=sum{a_iw_i(x)}
     // and P(x)=Ax*Bx-Cx  (which should be equal to hx*zx)
     // this end up with three polynomials
+
+    proveTime:=time.Now()
+
     
     Ax, Bx, Cx, px := polyf.CombinePolynomials(wires, ux, vx, wx)
 
@@ -463,13 +466,14 @@ func main(){
 
     pfProduct:=zkproof.ZkproofPdsProduct(ca_p,cb_p,right,G,H,A,B,polyf.F.Add(polyf.F.Neg(random_tA),r_u_inner),polyf.F.Add(polyf.F.Neg(random_tB),r_v_inner),rt,polyf)
 
-
+    elapsedProof:= time.Since(proveTime)
+    fmt.Println("Verification done,used ",elapsedProof)
 
     
     
 
     fmt.Println("\ncommitment size:",len(c_inputs)*64,"bytes")
-    fmt.Println("proof size:",704+len(pf_bulletproof_u.LR)*64*3+128*4+len(pf_bulletproof_hxzx.LR)*64,"bytes")
+    fmt.Println("proof without counting commitments size:",704+len(pf_bulletproof_u.LR)*64*3+128*4+len(pf_bulletproof_hxzx.LR)*64,"bytes")
 
     fmt.Println("length of u v w pf LR",len(pf_bulletproof_u.LR))
     fmt.Println("length of hx pf LR",len(pf_bulletproof_hxzx.LR))
