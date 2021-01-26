@@ -23,10 +23,12 @@ func main() {
     }
 
     users:=2
-    bitsrange:=8
+    balancesRange:=32
+    transactionsRange:=16
 
     users=users+1
-    bitsrange=bitsrange+1
+    balancesRange=balancesRange+1
+    transactionsRange=transactionsRange+1
  
     //generate old balances b...
     for i:=1;i<users;i++{
@@ -79,7 +81,7 @@ func main() {
     //generate bits for new balance b...new...
     for i:=1;i<users;i++{
 
-        for j:=1;j<bitsrange;j++{
+        for j:=1;j<balancesRange;j++{
             msg := fmt.Sprintf("private b%dnew%d,", i,j)
             _, err2 := f.WriteString(msg)
 
@@ -95,7 +97,7 @@ func main() {
 
             if j!=i{
 
-                for k:=1;k<bitsrange;k++{
+                for k:=1;k<transactionsRange;k++{
                     msg := fmt.Sprintf("private v%d%du%d,", i,j,k)
                     _, err2 := f.WriteString(msg)
 
@@ -144,7 +146,7 @@ func main() {
 
             if j!=i{
                 s:=1
-                for k:=1;k<bitsrange;k++{
+                for k:=1;k<transactionsRange;k++{
                     
                     if k==1{
                         msg := fmt.Sprintf("z%d%db%d=v%d%du%d*2 \n", i,j,s,i,j,k)
@@ -199,7 +201,7 @@ func main() {
 
             if j!=i{
 
-                for k:=1;k<bitsrange;k++{
+                for k:=1;k<transactionsRange;k++{
                     msg := fmt.Sprintf("z%d%do%da=1-v%d%du%d \n", i,j,k,i,j,k)
                     _, err2 := f.WriteString(msg)
                     if err2 != nil {
@@ -230,7 +232,7 @@ func main() {
    for i:=1;i<users;i++{
         
         s:=1
-        for k:=1;k<bitsrange;k++{
+        for k:=1;k<balancesRange;k++{
             if k==1{
                         msg := fmt.Sprintf("zb%dnewb%d=b%dnew%d*2 \n",i,s,i,k)
                         _, err2 := f.WriteString(msg)
@@ -273,7 +275,7 @@ func main() {
    for i:=1;i<users;i++{
 
 
-        for k:=1;k<bitsrange;k++{
+        for k:=1;k<balancesRange;k++{
             msg := fmt.Sprintf("zb%dnewo%da=1-b%dnew%d \n", i,k,i,k)
              _, err2 := f.WriteString(msg)
             if err2 != nil {

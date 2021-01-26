@@ -30,14 +30,14 @@ func EvalPolys(polyf r1csqap.PolynomialField,ux [][]*big.Int,x *big.Int)([]*big.
 	return U
 }
 
-func AddTxValueBits(txs []*big.Int) []*big.Int{
-    
+func AddTxValueBits(txs []*big.Int,length int64) []*big.Int{
+    bitslength:=fmt.Sprintf("0%db",length)
     var bits []*big.Int
     for j:=0;j<len(txs);j++{
     	input:=txs[j]
-    	s := fmt.Sprintf("%08b", input) 
+    	s := fmt.Sprintf("%"+bitslength, input) 
 
-    	for i := 0; i < 8; i++{
+    	for i := 0; i < int(length); i++{
 
        		bits=append(bits,big.NewInt(int64(s[i]-'0')))
 
@@ -71,11 +71,15 @@ func InputsGenerator(f fields.Fq)([]*big.Int,[]*big.Int,[]*big.Int){
     var privateInputs []*big.Int
 
     const users=2
+    const balanceRange=32
+    const TransactionsRange=16
     
     //generate the original balance
+    maxReceiveV:=f.Mul(f.Exp(big.NewInt(int64(2)),big.NewInt(int64(TransactionsRange))),big.NewInt(int64(users-1)))
+    maxBalance:=f.Exp(big.NewInt(int64(2)),big.NewInt(int64(balanceRange)))
     total:=big.NewInt(int64(0))
     for i:=1;i<users+1;i++{
-    	balance,_:=rand.Int(rand.Reader,big.NewInt(int64(255)))
+    	balance,_:=rand.Int(rand.Reader,f.Sub(maxBalance,maxReceiveV))
     	total=f.Add(total,balance)
     	privateSignals=append(privateSignals,balance)
     }
@@ -98,13 +102,19 @@ func InputsGenerator(f fields.Fq)([]*big.Int,[]*big.Int,[]*big.Int){
     	sum:=big.NewInt(int64(0))
     	for j:=1;j<users+1;j++{
           if i!=j {
-             trans,_:=rand.Int(rand.Reader,f.Sub(privateSignals[i-1],sum))
+          	 var trans *big.Int
+             if f.Sub(privateSignals[i-1],sum).Cmp(f.Sub(f.Exp(big.NewInt(int64(2)),big.NewInt(int64(TransactionsRange))),big.NewInt(int64(1))))<0 {
+             	trans,_=rand.Int(rand.Reader,f.Sub(privateSignals[i-1],sum))
+             }else {
+             	trans,_=rand.Int(rand.Reader,f.Sub(f.Exp(big.NewInt(int64(2)),big.NewInt(int64(TransactionsRange))),big.NewInt(int64(1))))
+             }
+             
              tx[i][j]=trans
              sum=f.Add(sum,trans)
              TxsArray=append(TxsArray,trans)
           }
         }
-        subResult=append(subResult,sum)
+        subResult=append(subResult,f.Sub(privateSignals[i-1],sum))
     } 
 
     fmt.Println("transactions are:",tx)
@@ -136,11 +146,11 @@ func InputsGenerator(f fields.Fq)([]*big.Int,[]*big.Int,[]*big.Int){
 
 
 
-    privateSignals=append(privateSignals,AddTxValueBits(subResult)...)
+    privateSignals=append(privateSignals,AddTxValueBits(subResult,balanceRange)...)
 
-    fmt.Println("add new balances bits",privateSignals)
-    privateSignals=append(privateSignals,AddTxValueBits(TxsArray)...)
-    fmt.Println("private signals length:",len(privateSignals))
+    //fmt.Println("add new balances bits",privateSignals)
+    privateSignals=append(privateSignals,AddTxValueBits(TxsArray,TransactionsRange)...)
+    //fmt.Println("private signals length:",len(privateSignals))
 
     //public inputs
 
@@ -148,7 +158,7 @@ func InputsGenerator(f fields.Fq)([]*big.Int,[]*big.Int,[]*big.Int){
     var publicSignals []*big.Int
     publicSignals=append(publicSignals,total)
     publicSignals=append(publicSignals,d...)
-    fmt.Println("publicSignals length",t)
+   // fmt.Println("publicSignals length",t)
 
      
 
