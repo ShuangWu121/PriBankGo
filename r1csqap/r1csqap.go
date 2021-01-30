@@ -8,6 +8,8 @@ import (
 	"github.com/arnaucube/go-snark/fields"
 	"runtime"
 	"sync"
+	"log"
+    "os"
 	
 )
 
@@ -343,6 +345,16 @@ func (pf PolynomialField) R1CSToQAP(a, b, c [][]*big.Int) ([][]*big.Int, [][]*bi
 	elapsed := time.Since(start)
 	fmt.Println("Compute QAP done,used ",elapsed)
 
+	f, err := os.Create("qap_time.txt")
+
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    defer f.Close()
+
+    msg := fmt.Sprintf("Compute QAP done,used ",elapsed)
+        _, _= f.WriteString(msg)
 	
 	
 	return alphas, betas, gammas, z
