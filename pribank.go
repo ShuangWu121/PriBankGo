@@ -71,8 +71,8 @@ func InputsGenerator(f fields.Fq)([]*big.Int,[]*big.Int,[]*big.Int){
     var privateInputs []*big.Int
 
     const users=2
-    const balanceRange=16
-    const TransactionsRange=8
+    const balanceRange=8
+    const TransactionsRange=4
     
     //generate the original balance
     maxReceiveV:=f.Mul(f.Exp(big.NewInt(int64(2)),big.NewInt(int64(TransactionsRange))),big.NewInt(int64(users-1)))
@@ -217,6 +217,8 @@ func InputsGenerator(f fields.Fq)([]*big.Int,[]*big.Int,[]*big.Int){
 
 
 func main(){
+
+
 	fmt.Println("Generating QAP for Circuit")
 
 
@@ -254,6 +256,12 @@ func main(){
 
 	fmt.Println("\nThe number of wires is:",len(wires))
 	fmt.Println("wires values:",wires)
+
+	reader1 := bufio.NewReader(os.Stdin)
+    fmt.Print("see wires values ")
+    press, _ := reader1.ReadString('\n')
+    fmt.Print("You press " + press)
+
 	fmt.Println("\nsignals are :",circuit.Signals)
 
     
