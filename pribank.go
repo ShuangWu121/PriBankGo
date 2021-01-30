@@ -71,8 +71,8 @@ func InputsGenerator(f fields.Fq)([]*big.Int,[]*big.Int,[]*big.Int){
     var privateInputs []*big.Int
 
     const users=2
-    const balanceRange=8
-    const TransactionsRange=4
+    const balanceRange=14
+    const TransactionsRange=8
     
     //generate the original balance
     maxReceiveV:=f.Mul(f.Exp(big.NewInt(int64(2)),big.NewInt(int64(TransactionsRange))),big.NewInt(int64(users-1)))
@@ -475,7 +475,7 @@ func main(){
     pfProduct:=zkproof.ZkproofPdsProduct(ca_p,cb_p,right,G,H,A,B,polyf.F.Add(polyf.F.Neg(random_tA),r_u_inner),polyf.F.Add(polyf.F.Neg(random_tB),r_v_inner),rt,polyf)
 
     elapsedProof:= time.Since(proveTime)
-    fmt.Println("Verification done,used ",elapsedProof)
+    fmt.Println("Prove done,used ",elapsedProof)
 
     
     
