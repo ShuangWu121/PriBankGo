@@ -71,15 +71,15 @@ func InputsGenerator(f fields.Fq)([]*big.Int,[]*big.Int,[]*big.Int){
     var privateInputs []*big.Int
 
     const users=2
-    const balanceRange=6
-    const TransactionsRange=4
+    const balanceRange=8
+    const TransactionsRange=8
     
     //generate the original balance
-    maxReceiveV:=f.Mul(f.Exp(big.NewInt(int64(2)),big.NewInt(int64(TransactionsRange))),big.NewInt(int64(users-1)))
-    maxBalance:=f.Exp(big.NewInt(int64(2)),big.NewInt(int64(balanceRange)))
+    //maxReceiveV:=f.Mul(f.Exp(big.NewInt(int64(2)),big.NewInt(int64(TransactionsRange))),big.NewInt(int64(users-1)))
+    maxBalance:=f.Exp(big.NewInt(int64(2)),big.NewInt(int64(balanceRange-2)))
     total:=big.NewInt(int64(0))
     for i:=1;i<users+1;i++{
-    	balance,_:=rand.Int(rand.Reader,f.Sub(maxBalance,maxReceiveV))
+    	balance,_:=rand.Int(rand.Reader,maxBalance)
     	total=f.Add(total,balance)
     	privateSignals=append(privateSignals,balance)
     }
@@ -104,12 +104,14 @@ func InputsGenerator(f fields.Fq)([]*big.Int,[]*big.Int,[]*big.Int){
           if i!=j {
           	 var trans *big.Int
              if f.Sub(privateSignals[i-1],sum).Cmp(f.Sub(f.Exp(big.NewInt(int64(2)),big.NewInt(int64(TransactionsRange))),big.NewInt(int64(1))))<0 {
-             	trans,_=rand.Int(rand.Reader,f.Sub(privateSignals[i-1],sum))
+             	if f.Sub(privateSignals[i-1],sum).Cmp(big.NewInt(int64(0)))<0{
+             		trans=big.NewInt(int64(0))}else{trans,_=rand.Int(rand.Reader,f.Sub(privateSignals[i-1],sum))}
              }else {
              	trans,_=rand.Int(rand.Reader,f.Sub(f.Exp(big.NewInt(int64(2)),big.NewInt(int64(TransactionsRange))),big.NewInt(int64(1))))
              }
-             
-             tx[i][j]=trans
+             if new(big.Int).Mod(trans,big.NewInt(int64(2)))==big.NewInt(int64(1)){
+             	tx[i][j]=big.NewInt(int64(0)) 
+                trans=big.NewInt(int64(0))}else{tx[i][j]=trans}
              sum=f.Add(sum,trans)
              TxsArray=append(TxsArray,trans)
           }
