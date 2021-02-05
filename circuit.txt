@@ -1,4 +1,4 @@
-func main(private b1,private b2,private b1new,private b2new,private t1,private t2,private v12u,private v21u,private b1new1,private b1new2,private b1new3,private b1new4,private b1new5,private b1new6,private b1new7,private b1new8,private b2new1,private b2new2,private b2new3,private b2new4,private b2new5,private b2new6,private b2new7,private b2new8,private v12u1,private v12u2,private v12u3,private v12u4,private v12u5,private v12u6,private v12u7,private v12u8,private v21u1,private v21u2,private v21u3,private v21u4,private v21u5,private v21u6,private v21u7,private v21u8,public total,public d1,public d2):
+func main(private b1,private b2,private b1new,private b2new,private t1,private t2,private v12u,private v21u,private b1new1,private b1new2,private b1new3,private b1new4,private b1new5,private b1new6,private b2new1,private b2new2,private b2new3,private b2new4,private b2new5,private b2new6,private v12u1,private v12u2,private v12u3,private v12u4,private v12u5,private v12u6,private v21u1,private v21u2,private v21u3,private v21u4,private v21u5,private v21u6,public total,public d1,public d2):
 z12b1=v12u1*2 
 z12b2=z12b1+v12u2 
 z12b3=z12b2*2 
@@ -9,11 +9,7 @@ z12b7=z12b6*2
 z12b8=z12b7+v12u5 
 z12b9=z12b8*2 
 z12b10=z12b9+v12u6 
-z12b11=z12b10*2 
-z12b12=z12b11+v12u7 
-z12b13=z12b12*2 
-z12b14=z12b13+v12u8 
-equals(z12b14,v12u) 
+equals(z12b10,v12u) 
  
 z21b1=v21u1*2 
 z21b2=z21b1+v21u2 
@@ -25,11 +21,7 @@ z21b7=z21b6*2
 z21b8=z21b7+v21u5 
 z21b9=z21b8*2 
 z21b10=z21b9+v21u6 
-z21b11=z21b10*2 
-z21b12=z21b11+v21u7 
-z21b13=z21b12*2 
-z21b14=z21b13+v21u8 
-equals(z21b14,v21u) 
+equals(z21b10,v21u) 
  
 value0=0+0
 z12o1a=1-v12u1 
@@ -50,12 +42,6 @@ equals(z12o5b,value0)
 z12o6a=1-v12u6 
 z12o6b=z12o6a*v12u6 
 equals(z12o6b,value0) 
-z12o7a=1-v12u7 
-z12o7b=z12o7a*v12u7 
-equals(z12o7b,value0) 
-z12o8a=1-v12u8 
-z12o8b=z12o8a*v12u8 
-equals(z12o8b,value0) 
 
 z21o1a=1-v21u1 
 z21o1b=z21o1a*v21u1 
@@ -75,12 +61,6 @@ equals(z21o5b,value0)
 z21o6a=1-v21u6 
 z21o6b=z21o6a*v21u6 
 equals(z21o6b,value0) 
-z21o7a=1-v21u7 
-z21o7b=z21o7a*v21u7 
-equals(z21o7b,value0) 
-z21o8a=1-v21u8 
-z21o8b=z21o8a*v21u8 
-equals(z21o8b,value0) 
 
 zb1newb1=b1new1*2 
 zb1newb2=zb1newb1+b1new2 
@@ -92,11 +72,7 @@ zb1newb7=zb1newb6*2
 zb1newb8=zb1newb7+b1new5 
 zb1newb9=zb1newb8*2 
 zb1newb10=zb1newb9+b1new6 
-zb1newb11=zb1newb10*2 
-zb1newb12=zb1newb11+b1new7 
-zb1newb13=zb1newb12*2 
-zb1newb14=zb1newb13+b1new8 
-equals(zb1newb14,b1new) 
+equals(zb1newb10,b1new) 
  
 zb2newb1=b2new1*2 
 zb2newb2=zb2newb1+b2new2 
@@ -108,11 +84,7 @@ zb2newb7=zb2newb6*2
 zb2newb8=zb2newb7+b2new5 
 zb2newb9=zb2newb8*2 
 zb2newb10=zb2newb9+b2new6 
-zb2newb11=zb2newb10*2 
-zb2newb12=zb2newb11+b2new7 
-zb2newb13=zb2newb12*2 
-zb2newb14=zb2newb13+b2new8 
-equals(zb2newb14,b2new) 
+equals(zb2newb10,b2new) 
  
 zb1newo1a=1-b1new1 
 zb1newo1b=zb1newo1a*b1new1 
@@ -132,12 +104,6 @@ equals(zb1newo5b,value0)
 zb1newo6a=1-b1new6 
 zb1newo6b=zb1newo6a*b1new6 
 equals(zb1newo6b,value0) 
-zb1newo7a=1-b1new7 
-zb1newo7b=zb1newo7a*b1new7 
-equals(zb1newo7b,value0) 
-zb1newo8a=1-b1new8 
-zb1newo8b=zb1newo8a*b1new8 
-equals(zb1newo8b,value0) 
 
 zb2newo1a=1-b2new1 
 zb2newo1b=zb2newo1a*b2new1 
@@ -157,12 +123,6 @@ equals(zb2newo5b,value0)
 zb2newo6a=1-b2new6 
 zb2newo6b=zb2newo6a*b2new6 
 equals(zb2newo6b,value0) 
-zb2newo7a=1-b2new7 
-zb2newo7b=zb2newo7a*b2new7 
-equals(zb2newo7b,value0) 
-zb2newo8a=1-b2new8 
-zb2newo8b=zb2newo8a*b2new8 
-equals(zb2newo8b,value0) 
 
 u1Sub1=b1-v12u 
 

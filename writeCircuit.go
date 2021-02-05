@@ -22,9 +22,9 @@ func main() {
         log.Fatal(err2)
     }
 
-    users:=4
-    balancesRange:=8
-    transactionsRange:=8
+    users:=2
+    balancesRange:=6
+    transactionsRange:=6
 
     users=users+1
     balancesRange=balancesRange+1

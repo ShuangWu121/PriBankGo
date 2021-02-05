@@ -71,8 +71,8 @@ func InputsGenerator(f fields.Fq)([]*big.Int,[]*big.Int,[]*big.Int){
     var privateInputs []*big.Int
 
     const users=2
-    const balanceRange=8
-    const TransactionsRange=8
+    const balanceRange=6
+    const TransactionsRange=6
     
     //generate the original balance
     //maxReceiveV:=f.Mul(f.Exp(big.NewInt(int64(2)),big.NewInt(int64(TransactionsRange))),big.NewInt(int64(users-1)))
