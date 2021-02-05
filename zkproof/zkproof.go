@@ -220,10 +220,32 @@ func ZKverifyPdsComits_PubVec(hi []CurvePoint,pubv []*big.Int,pf pf_PdsComits_Pu
   
    //compute tau=\prod h_i^pubv_i
     var tau CurvePoint
+    var temptau []CurvePoint
+
+    for i := 0; i < len(pubv); i++ {
+		temptau[i]=H
+	}
+	/*
     for i := 0; i < len(pubv); i++ {
 		temp,_:= CurveScalarMult(hi[i],pubv[i])
 		if i>0{tau,_=CurveAdd(tau,temp)
 	    }else {tau=temp}
+	}*/
+    var wg sync.WaitGroup
+	runtime.GOMAXPROCS(runtime.NumCPU())
+
+	for i := 0; i < len(pubv); i++ {
+		wg.Add(1)
+	    go func(){
+		temptau[i],_= CurveScalarMult(hi[i],pubv[i])
+		wg.Done()
+	    }()
+	}
+    
+    wg.Wait()
+    tau=temptau[0]
+	for i := 1; i < len(pubv); i++ {
+		tau,_=CurveAdd(tau,temptau[i])
 	}
 
    x := new(big.Int).SetBytes(crypto.Keccak256([]byte(tau.X.String()+tau.Y.String()+
