@@ -373,7 +373,6 @@ func ZkverifyPdsProduct(ca,cb,c,G,H CurvePoint,pf pf_PdsProduct,polyf r1csqap.Po
     
     if  (tempa.X.Cmp(tempa1.X)!=0)||(tempa.Y.Cmp(tempa1.Y)!=0){flag=0}
     wg.Done()
-    wg.Done()
     }()
     wg.Wait()
 
