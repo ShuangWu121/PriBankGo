@@ -223,7 +223,7 @@ func ZKverifyPdsComits_PubVec(hi []CurvePoint,pubv []*big.Int,pf pf_PdsComits_Pu
     var temptau []CurvePoint
 
     for i := 0; i < len(pubv); i++ {
-		temptau[i]=H
+		temptau=append(temptau,H)
 	}
 	/*
     for i := 0; i < len(pubv); i++ {
