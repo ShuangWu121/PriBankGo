@@ -156,9 +156,38 @@ func (pf PolynomialField) NewPolZeroAt(pointPos, totalPoints int, height *big.In
 func (pf PolynomialField) LagrangeInterpolation(v []*big.Int) []*big.Int {
 	// https://en.wikipedia.org/wiki/Lagrange_polynomial
 	var r []*big.Int
+	var temp[][]*big.Int
+
+	var wg sync.WaitGroup
+	runtime.GOMAXPROCS(runtime.NumCPU())
+
+	//fmt.Println("what happen for this function",len(v))
+
 	for i := 0; i < len(v); i++ {
-		r = pf.Add(r, pf.NewPolZeroAt(i+1, len(v), v[i]))
+			temp=append(temp,[]*big.Int{big.NewInt(int64(0))})
+			//fmt.Println("did you come here?",i)
 	}
+
+    for i := 0; i < len(v); i++ {
+    	wg.Add(1)
+    	//fmt.Println("go continue adding",i)
+    	a:=i
+		go func(){
+		//	fmt.Println("I am in go runing",i)
+			//fmt.Println("index",a,"start")
+			temp[a]=pf.NewPolZeroAt(a+1, len(v), v[a])
+			
+			defer wg.Done()
+		}()
+	}
+
+	wg.Wait()
+
+	
+	for i := 0; i < len(v); i++ {
+		r = pf.Add(r, temp[i])//pf.NewPolZeroAt(i+1, len(v), v[i]))
+	}
+
 	//
 	return r
 }
