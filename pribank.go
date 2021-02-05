@@ -71,8 +71,8 @@ func InputsGenerator(f fields.Fq)([]*big.Int,[]*big.Int,[]*big.Int){
     var privateInputs []*big.Int
 
     const users=2
-    const balanceRange=14
-    const TransactionsRange=8
+    const balanceRange=6
+    const TransactionsRange=4
     
     //generate the original balance
     maxReceiveV:=f.Mul(f.Exp(big.NewInt(int64(2)),big.NewInt(int64(TransactionsRange))),big.NewInt(int64(users-1)))
@@ -274,7 +274,7 @@ func main(){
 
 
 
-    fmt.Println("\nnumbers of gates:",len(u))
+    
 
     
     
@@ -583,6 +583,7 @@ func main(){
     fmt.Println("product check: com(A*B)==com(C+HZ)",zkproof.ZkverifyPdsProduct(ca,cb,c_right,G,H,pfProduct,polyf))
     elapsed := time.Since(start)
     fmt.Println("Verification done,used ",elapsed)
+    fmt.Println("\nnumbers of gates:",len(u))
 
     reader := bufio.NewReader(os.Stdin)
     fmt.Print("The process is done, press any key and enter to stop: ")
