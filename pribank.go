@@ -352,6 +352,7 @@ func main(){
 
     r_inner,_:=rand.Int(rand.Reader,N)
     gi:=zkproof.Generators(len(wires_inner))
+
     commit_inner:=zkproof.PedersenVectorComit(wires_inner,gi,H,r_inner)
    
     fmt.Println("can you come here?")
@@ -480,7 +481,7 @@ func main(){
        w_inner=polyf.F.Add(temp,w_inner)
     }
     r_w_inner,_=rand.Int(rand.Reader,N)
-    c_w_inner:=zkproof.PedersenComit(w_inner,r_w_inner,G,H)
+    c_w_inner=zkproof.PedersenComit(w_inner,r_w_inner,G,H)
     pf_bulletproof_w=zkproof.ZKproofPdsVec_PubVec(gi,G,H,commit_inner,c_w_inner,wires_inner,zkproof.Padding(W[pos_inner:]),r_inner,r_w_inner,polyf)
 
     
@@ -493,7 +494,7 @@ func main(){
        hz=polyf.F.Add(temp,hz)
     }
     r_hz,_=rand.Int(rand.Reader,N)
-    c_hz:=zkproof.PedersenComit(hz,r_hz,G,H)
+    c_hz=zkproof.PedersenComit(hz,r_hz,G,H)
     pf_bulletproof_hxzx=zkproof.ZKproofPdsVec_PubVec(hi_hx,G,H,ch,c_hz,hx,zkproof.Padding(X),r_hx,r_hz,polyf)
     wg.Done()
     }()
