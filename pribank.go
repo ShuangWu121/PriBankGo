@@ -294,7 +294,9 @@ func main(){
     // this end up with three polynomials
 
     proveTime:=time.Now()
-
+    
+    var wg sync.WaitGroup
+	runtime.GOMAXPROCS(runtime.NumCPU())
     
     Ax, Bx, Cx, px := polyf.CombinePolynomials(wires, ux, vx, wx)
 
@@ -395,13 +397,37 @@ func main(){
     C:=polyf.Eval(Cx,x)
     HZ:=polyf.F.Mul(polyf.Eval(hx,x),polyf.Eval(zx,x))
 
+    var random_tA *big.Int
+    var r_w_inner *big.Int
+    var r_u_inner *big.Int
+    var r_v_inner *big.Int
+    var random_tW *big.Int
+    var random_tB *big.Int
+    var r_hz *big.Int
+    var ca_p zkproof.CurvePoint
+    var cb_p zkproof.CurvePoint
+    var pf_bulletproof_u zkproof.Pf_PdsVec_PubVec
+    var pf_bulletproof_v zkproof.Pf_PdsVec_PubVec
+    var pf_bulletproof_w zkproof.Pf_PdsVec_PubVec
+    var pf_bulletproof_hxzx zkproof.Pf_PdsVec_PubVec
+    var pfA zkproof.Pf_PdsComits_PubVec
+    var pfB zkproof.Pf_PdsComits_PubVec
+    var pfW zkproof.Pf_PdsComits_PubVec
+    var c_u_inner zkproof.CurvePoint
+    var c_v_inner zkproof.CurvePoint
+    var c_w_inner zkproof.CurvePoint
+    var c_hz zkproof.CurvePoint
+
+
     
-   
+     
     //Prover generates the proof
    
     //pfA is to prove ca=g^sum{a_iU[i]}  i range is (len(publicSignals)+1:(len(privateInputs)+2))
-	random_tA,_ := rand.Int(rand.Reader,N)
-    pfA:=zkproof.ZKproofPdsComits_PubVec(hi,U[len(publicSignals)+1:pos_inner],gamma,random_tA,H)
+    wg.Add(1)
+    go func(){
+	random_tA,_ = rand.Int(rand.Reader,N)
+    pfA=zkproof.ZKproofPdsComits_PubVec(hi,U[len(publicSignals)+1:pos_inner],gamma,random_tA,H)
 
     
     u_inner:=big.NewInt(int64(0))
@@ -412,42 +438,47 @@ func main(){
 
        
     
-    r_u_inner,_:=rand.Int(rand.Reader,N)
+    r_u_inner,_=rand.Int(rand.Reader,N)
     c_u_inner:=zkproof.PedersenComit(u_inner,r_u_inner,G,H)
 
 
-    pf_bulletproof_u:=zkproof.ZKproofPdsVec_PubVec(gi,G,H,commit_inner,c_u_inner,wires_inner,zkproof.Padding(U[pos_inner:]),r_inner,r_u_inner,polyf)
+    pf_bulletproof_u=zkproof.ZKproofPdsVec_PubVec(gi,G,H,commit_inner,c_u_inner,wires_inner,zkproof.Padding(U[pos_inner:]),r_inner,r_u_inner,polyf)
 
-    ca_p:=zkproof.PedersenComit(A,polyf.F.Add(polyf.F.Neg(random_tA),r_u_inner),G,H)
+    ca_p=zkproof.PedersenComit(A,polyf.F.Add(polyf.F.Neg(random_tA),r_u_inner),G,H)
+    wg.Done()
+    }()
 
-
-    
-	random_tB,_ := rand.Int(rand.Reader,N)
-    pfB:=zkproof.ZKproofPdsComits_PubVec(hi,V[len(publicSignals)+1:pos_inner],gamma,random_tB,H)
+    wg.Add(1)
+    go func(){
+	random_tB,_ = rand.Int(rand.Reader,N)
+    pfB=zkproof.ZKproofPdsComits_PubVec(hi,V[len(publicSignals)+1:pos_inner],gamma,random_tB,H)
 
     v_inner:=big.NewInt(int64(0))
     for i:=0;i<wires_inner_len;i++{
        temp:=polyf.F.Mul(wires_inner[i],V[pos_inner+i])
        v_inner=polyf.F.Add(temp,v_inner)
     }
-    r_v_inner,_:=rand.Int(rand.Reader,N)
+    r_v_inner,_=rand.Int(rand.Reader,N)
     c_v_inner:=zkproof.PedersenComit(v_inner,r_v_inner,G,H)
-    pf_bulletproof_v:=zkproof.ZKproofPdsVec_PubVec(gi,G,H,commit_inner,c_v_inner,wires_inner,zkproof.Padding(V[pos_inner:]),r_inner,r_v_inner,polyf)
-    cb_p:=zkproof.PedersenComit(B,polyf.F.Add(polyf.F.Neg(random_tB),r_v_inner),G,H)
+    pf_bulletproof_v=zkproof.ZKproofPdsVec_PubVec(gi,G,H,commit_inner,c_v_inner,wires_inner,zkproof.Padding(V[pos_inner:]),r_inner,r_v_inner,polyf)
+    cb_p=zkproof.PedersenComit(B,polyf.F.Add(polyf.F.Neg(random_tB),r_v_inner),G,H)
     
-
-
+    wg.Done()
+    }()
+ 
+    wg.Add(1)
+    go func(){
     
-	random_tW,_ := rand.Int(rand.Reader,N)
-    pfW:=zkproof.ZKproofPdsComits_PubVec(hi,W[len(publicSignals)+1:pos_inner],gamma,random_tW,H)
+	random_tW,_ = rand.Int(rand.Reader,N)
+    pfW=zkproof.ZKproofPdsComits_PubVec(hi,W[len(publicSignals)+1:pos_inner],gamma,random_tW,H)
     w_inner:=big.NewInt(int64(0))
     for i:=0;i<wires_inner_len;i++{
        temp:=polyf.F.Mul(wires_inner[i],W[pos_inner+i])
        w_inner=polyf.F.Add(temp,w_inner)
     }
-    r_w_inner,_:=rand.Int(rand.Reader,N)
+    r_w_inner,_=rand.Int(rand.Reader,N)
     c_w_inner:=zkproof.PedersenComit(w_inner,r_w_inner,G,H)
-    pf_bulletproof_w:=zkproof.ZKproofPdsVec_PubVec(gi,G,H,commit_inner,c_w_inner,wires_inner,zkproof.Padding(W[pos_inner:]),r_inner,r_w_inner,polyf)
+    pf_bulletproof_w=zkproof.ZKproofPdsVec_PubVec(gi,G,H,commit_inner,c_w_inner,wires_inner,zkproof.Padding(W[pos_inner:]),r_inner,r_w_inner,polyf)
 
     
 
@@ -458,9 +489,12 @@ func main(){
        temp:=polyf.F.Mul(hx[i],X[i])
        hz=polyf.F.Add(temp,hz)
     }
-    r_hz,_:=rand.Int(rand.Reader,N)
+    r_hz,_=rand.Int(rand.Reader,N)
     c_hz:=zkproof.PedersenComit(hz,r_hz,G,H)
-    pf_bulletproof_hxzx:=zkproof.ZKproofPdsVec_PubVec(hi_hx,G,H,ch,c_hz,hx,zkproof.Padding(X),r_hx,r_hz,polyf)
+    pf_bulletproof_hxzx=zkproof.ZKproofPdsVec_PubVec(hi_hx,G,H,ch,c_hz,hx,zkproof.Padding(X),r_hx,r_hz,polyf)
+    wg.Done()
+    }()
+    wg.Wait()
     
     
     //pfA,pfB,pfW,pfH allow verifier compute ca,cb,cw,h(x)*z(x)
@@ -482,8 +516,8 @@ func main(){
     
     
 
-    fmt.Println("\ncommitment size:",len(c_inputs)*64,"bytes")
-    fmt.Println("proof without counting commitments size:",704+len(pf_bulletproof_u.LR)*64*3+128*4+len(pf_bulletproof_hxzx.LR)*64,"bytes")
+    fmt.Println("\ncommitment size:",len(c_inputs)*33,"bytes")
+    fmt.Println("proof without counting commitments size:",(33*3+32*2)*3+292+len(pf_bulletproof_u.LR)*33*3+97*4+len(pf_bulletproof_hxzx.LR)*33,"bytes")
 
     fmt.Println("length of u v w pf LR",len(pf_bulletproof_u.LR))
     fmt.Println("length of hx pf LR",len(pf_bulletproof_hxzx.LR))
@@ -493,8 +527,7 @@ func main(){
 
     start := time.Now()
     
-    var wg sync.WaitGroup
-	runtime.GOMAXPROCS(runtime.NumCPU())
+    
 
     fmt.Println("\nVerification:")
 

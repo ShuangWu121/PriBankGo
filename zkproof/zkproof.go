@@ -104,13 +104,30 @@ func PedersenVectorComit(a []*big.Int,G []CurvePoint, H CurvePoint,r *big.Int)(C
     
     c:=CurvePoint{}
     temp:=CurvePoint{}
-	for i := 0; i < len(a); i++ {
+    var wg sync.WaitGroup
+	runtime.GOMAXPROCS(runtime.NumCPU())
+	wg.Add(1)
+	go func(){
+    c,_=CurveScalarMult(G[0], a[0])
+	for i := 1; i < len(a)/2; i++ {
 		temp,_ := CurveScalarMult(G[i], a[i])
-        if i==0{
-        	c=temp
-        }else{c,_=CurveAdd(c,temp)}
+        c,_=CurveAdd(c,temp)
 
 	}
+	wg.Done()
+    }()
+    wg.Add(1)
+	go func(){
+	for i := len(a)/2; i < len(a); i++ {
+		temp,_ := CurveScalarMult(G[i], a[i])
+        c,_=CurveAdd(c,temp)
+
+	}
+	wg.Done()
+    }()
+
+    wg.Wait()
+
 	temp,_=CurveScalarMult(H,r)
 	c,_=CurveAdd(temp,c)
   
@@ -152,7 +169,7 @@ func Generators(len int)([]CurvePoint){
 
 //zero-knowledge proof for inner product of Pedersen Commitments and a public vector
 
-type pf_PdsComits_PubVec struct {
+type Pf_PdsComits_PubVec struct {
 
 	c0 CurvePoint
 	Omega CurvePoint
@@ -163,7 +180,7 @@ type pf_PdsComits_PubVec struct {
 
 }
 
-func ZKproofPdsComits_PubVec(hi []CurvePoint,pubv []*big.Int,gamma,t *big.Int,H CurvePoint)(pf_PdsComits_PubVec){
+func ZKproofPdsComits_PubVec(hi []CurvePoint,pubv []*big.Int,gamma,t *big.Int,H CurvePoint)(Pf_PdsComits_PubVec){
     
     //compute c0
     c0,_:=CurveScalarMult(H,gamma)
@@ -210,43 +227,20 @@ func ZKproofPdsComits_PubVec(hi []CurvePoint,pubv []*big.Int,gamma,t *big.Int,H 
    theta1:=f.Sub(alpha,f.Mul(x,gamma))
    theta2:=f.Sub(beta,f.Mul(x,t))
    
-   pf:=pf_PdsComits_PubVec{c0,omega,d1,d2,theta1,theta2}
+   pf:=Pf_PdsComits_PubVec{c0,omega,d1,d2,theta1,theta2}
 
    return pf
 }
 
-func ZKverifyPdsComits_PubVec(hi []CurvePoint,pubv []*big.Int,pf pf_PdsComits_PubVec,H CurvePoint) (bool){
+func ZKverifyPdsComits_PubVec(hi []CurvePoint,pubv []*big.Int,pf Pf_PdsComits_PubVec,H CurvePoint) (bool){
    
   
    //compute tau=\prod h_i^pubv_i
     var tau CurvePoint
-    var temptau []CurvePoint
-
-    for i := 0; i < len(pubv); i++ {
-		temptau=append(temptau,H)
-	}
-	/*
     for i := 0; i < len(pubv); i++ {
 		temp,_:= CurveScalarMult(hi[i],pubv[i])
 		if i>0{tau,_=CurveAdd(tau,temp)
 	    }else {tau=temp}
-	}*/
-    var wg sync.WaitGroup
-	runtime.GOMAXPROCS(runtime.NumCPU())
-
-	for i := 0; i < len(pubv); i++ {
-		wg.Add(1)
-		a:=i
-	    go func(){
-		temptau[a],_= CurveScalarMult(hi[a],pubv[a])
-		wg.Done()
-	    }()
-	}
-    
-    wg.Wait()
-    tau=temptau[0]
-	for i := 1; i < len(pubv); i++ {
-		tau,_=CurveAdd(tau,temptau[i])
 	}
 
    x := new(big.Int).SetBytes(crypto.Keccak256([]byte(tau.X.String()+tau.Y.String()+
@@ -521,13 +515,13 @@ func Padding(input []*big.Int)([]*big.Int){
 	return input
 }
 
-type pf_PdsVec_PubVec struct{
+type Pf_PdsVec_PubVec struct{
 	LR []CurvePoint
 	d  CurvePoint
 	theta1 *big.Int
 	theta2 *big.Int
 }
-func ZKproofPdsVec_PubVec(gi []CurvePoint,g,h,ca,cab CurvePoint,a,b []*big.Int,ra,rab *big.Int, polyf r1csqap.PolynomialField)(pf_PdsVec_PubVec){//,c,h CurvePoint,polyf r1csqap.PolynomialField
+func ZKproofPdsVec_PubVec(gi []CurvePoint,g,h,ca,cab CurvePoint,a,b []*big.Int,ra,rab *big.Int, polyf r1csqap.PolynomialField)(Pf_PdsVec_PubVec){//,c,h CurvePoint,polyf r1csqap.PolynomialField
    
    if(len(gi)!=len(a) && len(a)!=len(b)){
    	fmt.Println("zkproof for Pedersen vector commitments: vector length wrong")
@@ -647,14 +641,14 @@ func ZKproofPdsVec_PubVec(gi []CurvePoint,g,h,ca,cab CurvePoint,a,b []*big.Int,r
    	
    	theta1:=polyf.F.Sub(alpha1,polyf.F.Mul(x,a[0]))
    	theta2:=polyf.F.Sub(alpha2,polyf.F.Mul(x,r))
-    pf:=pf_PdsVec_PubVec{LR,d,theta1,theta2}
+    pf:=Pf_PdsVec_PubVec{LR,d,theta1,theta2}
     return pf
 
     
 
 }
 
-func ZKverifyPdsVec_PubVec(gi []CurvePoint,g,h,ca,cab CurvePoint,b []*big.Int, polyf r1csqap.PolynomialField,pf pf_PdsVec_PubVec)(bool){
+func ZKverifyPdsVec_PubVec(gi []CurvePoint,g,h,ca,cab CurvePoint,b []*big.Int, polyf r1csqap.PolynomialField,pf Pf_PdsVec_PubVec)(bool){
 
 	c,_:=CurveAdd(ca,cab)
 	for i:=0;len(gi)>1;i++{
