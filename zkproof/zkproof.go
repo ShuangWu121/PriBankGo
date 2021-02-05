@@ -11,6 +11,8 @@ import(
     "crypto/rand"
     "github.com/ShuangWu121/PriBankGo/r1csqap"
     "encoding/gob"
+    "sync"
+    "runtime"
    // "encoding/gob"
 
 )
@@ -230,6 +232,7 @@ func ZKverifyPdsComits_PubVec(hi []CurvePoint,pubv []*big.Int,pf pf_PdsComits_Pu
                                                       pf.d2.X.String()+pf.d2.Y.String()+
                                                       H.X.String()+H.Y.String()+
                                                       pf.c0.X.String()+pf.c0.Y.String())))
+   
 
    //verify d1==c_0^xh^theta1
    
@@ -326,38 +329,56 @@ func ZkverifyPdsProduct(ca,cb,c,G,H CurvePoint,pf pf_PdsProduct,polyf r1csqap.Po
                                                       G.X.String()+G.Y.String())))
     x=polyf.F.Affine(x)
 
+    var wg sync.WaitGroup
+	runtime.GOMAXPROCS(runtime.NumCPU())
+	flag:=1
+
+	wg.Add(1)
+    go func(){
     temp1,_:=CurveScalarMult(G,pf.theta_a)
     temp2,_:=CurveScalarMult(H,pf.theta1)
 	temp1,_=CurveAdd(temp1,temp2)
 	temp,_:=CurveScalarMult(ca,x)
 	temp1,_=CurveAdd(temp1,temp)
     
-    if  (pf.d1.X.Cmp(temp1.X)!=0)||(pf.d1.Y.Cmp(temp1.Y)!=0){return false}
+    if  (pf.d1.X.Cmp(temp1.X)!=0)||(pf.d1.Y.Cmp(temp1.Y)!=0){flag=0}
+    wg.Done()
+    }()
 
-  
-    temp1,_=CurveScalarMult(G,pf.theta_b)
-    temp2,_=CurveScalarMult(H,pf.theta2)
-	temp1,_=CurveAdd(temp1,temp2)
-	temp,_=CurveScalarMult(cb,x)
-	temp1,_=CurveAdd(temp1,temp)
+    wg.Add(1)
+    go func(){
+    ttemp1,_:=CurveScalarMult(G,pf.theta_b)
+    ttemp2,_:=CurveScalarMult(H,pf.theta2)
+	ttemp1,_=CurveAdd(ttemp1,ttemp2)
+	ttemp,_:=CurveScalarMult(cb,x)
+	ttemp1,_=CurveAdd(ttemp1,ttemp)
 
-	if  (pf.d2.X.Cmp(temp1.X)!=0)||(pf.d2.Y.Cmp(temp1.Y)!=0){return false}
+	if  (pf.d2.X.Cmp(ttemp1.X)!=0)||(pf.d2.Y.Cmp(ttemp1.Y)!=0){flag=0}
+	wg.Done()
+    }()
 
-	temp1,_=CurveScalarMult(G,polyf.F.Mul(pf.theta_b,pf.theta_a))
-    temp2,_=CurveScalarMult(H,pf.theta_ab)
-	temp1,_=CurveAdd(temp1,temp2)
-	temp2,_=CurveScalarMult(pf.c0,x)
-	temp1,_=CurveAdd(temp1,temp2)
 
-	temp2,_=CurveScalarMult(c,polyf.F.Mul(x,x))
-	temp,_=CurveAdd(pf.c1,temp2)
+    wg.Add(1)
+    go func(){
+	tempa1,_:=CurveScalarMult(G,polyf.F.Mul(pf.theta_b,pf.theta_a))
+    tempa2,_:=CurveScalarMult(H,pf.theta_ab)
+	tempa1,_=CurveAdd(tempa1,tempa2)
+	tempa2,_=CurveScalarMult(pf.c0,x)
+	tempa1,_=CurveAdd(tempa1,tempa2)
+
+	tempa2,_=CurveScalarMult(c,polyf.F.Mul(x,x))
+	tempa,_:=CurveAdd(pf.c1,tempa2)
 
 
     
-    if  (temp.X.Cmp(temp1.X)!=0)||(temp.Y.Cmp(temp1.Y)!=0){return false}
+    if  (tempa.X.Cmp(tempa1.X)!=0)||(tempa.Y.Cmp(tempa1.Y)!=0){flag=0}
+    wg.Done()
+    wg.Done()
+    }()
+    wg.Wait()
 
-
-	return true
+    
+	if flag==1{return true}else{return false}
 }
 
 
