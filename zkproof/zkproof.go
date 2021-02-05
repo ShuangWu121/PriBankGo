@@ -236,8 +236,9 @@ func ZKverifyPdsComits_PubVec(hi []CurvePoint,pubv []*big.Int,pf pf_PdsComits_Pu
 
 	for i := 0; i < len(pubv); i++ {
 		wg.Add(1)
+		a:=i
 	    go func(){
-		temptau[i],_= CurveScalarMult(hi[i],pubv[i])
+		temptau[a],_= CurveScalarMult(hi[a],pubv[a])
 		wg.Done()
 	    }()
 	}
