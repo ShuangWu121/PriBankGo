@@ -107,7 +107,7 @@ func InputsGenerator(f fields.Fq)([]*big.Int,[]*big.Int,[]*big.Int){
              	if f.Sub(privateSignals[i-1],sum).Cmp(big.NewInt(int64(0)))<0{
              		trans=big.NewInt(int64(0))}else{trans,_=rand.Int(rand.Reader,f.Sub(privateSignals[i-1],sum))}
              }else {
-             	trans,_=rand.Int(rand.Reader,f.Sub(f.Exp(big.NewInt(int64(2)),big.NewInt(int64(TransactionsRange))),big.NewInt(int64(1))))
+             	trans,_=rand.Int(rand.Reader,f.Sub(f.Exp(big.NewInt(int64(2)),big.NewInt(int64(TransactionsRange-3))),big.NewInt(int64(1))))
              }
              if new(big.Int).Mod(trans,big.NewInt(int64(2)))==big.NewInt(int64(1)){
              	tx[i][j]=big.NewInt(int64(0)) 
