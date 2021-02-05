@@ -342,6 +342,7 @@ func main(){
     c_inputs,_:=zkproof.PedersenComitsForVector(wires_input,hi,gamma,G)
     
     //commit to the inner wires and hx
+    fmt.Println("can you come here?")
 
     pos_inner:=len(publicSignals)+len(privateInputs)+1
     wires_inner_len:=len(wires[pos_inner:])
@@ -459,7 +460,7 @@ func main(){
        v_inner=polyf.F.Add(temp,v_inner)
     }
     r_v_inner,_=rand.Int(rand.Reader,N)
-    c_v_inner:=zkproof.PedersenComit(v_inner,r_v_inner,G,H)
+    c_v_inner=zkproof.PedersenComit(v_inner,r_v_inner,G,H)
     pf_bulletproof_v=zkproof.ZKproofPdsVec_PubVec(gi,G,H,commit_inner,c_v_inner,wires_inner,zkproof.Padding(V[pos_inner:]),r_inner,r_v_inner,polyf)
     cb_p=zkproof.PedersenComit(B,polyf.F.Add(polyf.F.Neg(random_tB),r_v_inner),G,H)
     
