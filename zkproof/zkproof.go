@@ -107,24 +107,28 @@ func PedersenVectorComit(a []*big.Int,G []CurvePoint, H CurvePoint,r *big.Int)(C
     var wg sync.WaitGroup
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	wg.Add(1)
+	c1,_:=CurveScalarMult(G[0], a[0])
 	go func(){
-    c,_=CurveScalarMult(G[0], a[0])
+    
 	for i := 1; i < len(a)/2; i++ {
 		temp,_ := CurveScalarMult(G[i], a[i])
-        c,_=CurveAdd(c,temp)
+        c1,_=CurveAdd(c1,temp)
 
 	}
 	wg.Done()
     }()
     wg.Add(1)
+    c2,_:=CurveScalarMult(G[len(a)/2], a[len(a)/2])
 	go func(){
 	for i := len(a)/2; i < len(a); i++ {
 		temp,_ := CurveScalarMult(G[i], a[i])
-        c,_=CurveAdd(c,temp)
+        c2,_=CurveAdd(c2,temp)
 
 	}
 	wg.Done()
     }()
+
+    c,_=CurveAdd(c2,c1)
 
     wg.Wait()
 

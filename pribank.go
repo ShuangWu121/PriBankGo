@@ -348,6 +348,8 @@ func main(){
     wires_inner_len:=len(wires[pos_inner:])
     wires_inner:=zkproof.Padding(wires[pos_inner:])
    
+    fmt.Println("you come here? ooooooo")
+
     r_inner,_:=rand.Int(rand.Reader,N)
     gi:=zkproof.Generators(len(wires_inner))
     commit_inner:=zkproof.PedersenVectorComit(wires_inner,gi,H,r_inner)
