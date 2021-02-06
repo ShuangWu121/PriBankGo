@@ -428,8 +428,8 @@ func main(){
     //Prover generates the proof
    
     //pfA is to prove ca=g^sum{a_iU[i]}  i range is (len(publicSignals)+1:(len(privateInputs)+2))
-   // wg.Add(1)
-    //go func(){
+    wg.Add(1)
+    go func(){
 	random_tA,_ = rand.Int(rand.Reader,N)
     pfA=zkproof.ZKproofPdsComits_PubVec(hi,U[len(publicSignals)+1:pos_inner],gamma,random_tA,H)
 
@@ -447,14 +447,13 @@ func main(){
 
 
     pf_bulletproof_u=zkproof.ZKproofPdsVec_PubVec(gi,G,H,commit_inner,c_u_inner,wires_inner,zkproof.Padding(U[pos_inner:]),r_inner,r_u_inner,polyf)
-    fmt.Println("bulletproof check A: ",zkproof.ZKverifyPdsVec_PubVec(gi,G,H,commit_inner,c_u_inner,zkproof.Padding(U[pos_inner:]),polyf,pf_bulletproof_u))
 
     ca_p=zkproof.PedersenComit(A,polyf.F.Add(polyf.F.Neg(random_tA),r_u_inner),G,H)
-    //wg.Done()
-  //  }()
+    wg.Done()
+    }()
 
-    //wg.Add(1)
-    //go func(){
+    wg.Add(1)
+    go func(){
 	random_tB,_ = rand.Int(rand.Reader,N)
     pfB=zkproof.ZKproofPdsComits_PubVec(hi,V[len(publicSignals)+1:pos_inner],gamma,random_tB,H)
 
@@ -468,11 +467,11 @@ func main(){
     pf_bulletproof_v=zkproof.ZKproofPdsVec_PubVec(gi,G,H,commit_inner,c_v_inner,wires_inner,zkproof.Padding(V[pos_inner:]),r_inner,r_v_inner,polyf)
     cb_p=zkproof.PedersenComit(B,polyf.F.Add(polyf.F.Neg(random_tB),r_v_inner),G,H)
     
-    //wg.Done()
-    //}()
+    wg.Done()
+    }()
  
-    //wg.Add(1)
-   // go func(){
+    wg.Add(1)
+    go func(){
     
 	random_tW,_ = rand.Int(rand.Reader,N)
     pfW=zkproof.ZKproofPdsComits_PubVec(hi,W[len(publicSignals)+1:pos_inner],gamma,random_tW,H)
@@ -497,9 +496,9 @@ func main(){
     r_hz,_=rand.Int(rand.Reader,N)
     c_hz=zkproof.PedersenComit(hz,r_hz,G,H)
     pf_bulletproof_hxzx=zkproof.ZKproofPdsVec_PubVec(hi_hx,G,H,ch,c_hz,hx,zkproof.Padding(X),r_hx,r_hz,polyf)
-    //wg.Done()
-    //}()
-    //wg.Wait()
+    wg.Done()
+    }()
+    wg.Wait()
     
     
     //pfA,pfB,pfW,pfH allow verifier compute ca,cb,cw,h(x)*z(x)
@@ -586,9 +585,9 @@ func main(){
 
 
     //Verifier computes cw
-   // wg.Add(1)
+    wg.Add(1)
     var cw zkproof.CurvePoint
-    //go func(){
+    go func(){
     fmt.Println("validation C:",zkproof.ZKverifyPdsComits_PubVec(hi,W[len(publicSignals)+1:pos_inner],pfW,H))
 	fmt.Println("bulletproof check W: ",zkproof.ZKverifyPdsVec_PubVec(gi,G,H,commit_inner,c_w_inner,zkproof.Padding(W[pos_inner:]),polyf,pf_bulletproof_w))
 	
@@ -602,9 +601,9 @@ func main(){
 	   }else{ temp,_=zkproof.CurveScalarMult(G,polyf.F.Mul(W[i],publicSignals[i-1]))}
 		cw,_=zkproof.CurveAdd(cw,temp)
 	}
-	//wg.Done()
+	wg.Done()
     
-   // }()
+    }()
     //Verifier computes commitment for hx*zx
 
     wg.Add(1)
