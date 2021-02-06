@@ -22,7 +22,7 @@ func main() {
         log.Fatal(err2)
     }
 
-    users:=3
+    users:=4
     balancesRange:=8
     transactionsRange:=8
 
