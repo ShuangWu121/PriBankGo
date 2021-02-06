@@ -23,8 +23,8 @@ func main() {
     }
 
     users:=2
-    balancesRange:=6
-    transactionsRange:=6
+    balancesRange:=8
+    transactionsRange:=8
 
     users=users+1
     balancesRange=balancesRange+1
