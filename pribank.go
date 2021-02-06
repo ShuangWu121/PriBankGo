@@ -70,7 +70,7 @@ func InputsGenerator(f fields.Fq)([]*big.Int,[]*big.Int,[]*big.Int){
 	var privateSignals []*big.Int //include the private signals for range proof
     var privateInputs []*big.Int
 
-    const users=2
+    const users=3
     const balanceRange=8
     const TransactionsRange=8
     
