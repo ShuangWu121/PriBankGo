@@ -447,6 +447,7 @@ func main(){
 
 
     pf_bulletproof_u=zkproof.ZKproofPdsVec_PubVec(gi,G,H,commit_inner,c_u_inner,wires_inner,zkproof.Padding(U[pos_inner:]),r_inner,r_u_inner,polyf)
+    fmt.Println("bulletproof check A: ",zkproof.ZKverifyPdsVec_PubVec(gi,G,H,commit_inner,c_u_inner,zkproof.Padding(U[pos_inner:]),polyf,pf_bulletproof_u))
 
     ca_p=zkproof.PedersenComit(A,polyf.F.Add(polyf.F.Neg(random_tA),r_u_inner),G,H)
     //wg.Done()
