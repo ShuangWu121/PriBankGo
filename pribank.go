@@ -585,9 +585,9 @@ func main(){
 
 
     //Verifier computes cw
-    wg.Add(1)
+   // wg.Add(1)
     var cw zkproof.CurvePoint
-    go func(){
+    //go func(){
     fmt.Println("validation C:",zkproof.ZKverifyPdsComits_PubVec(hi,W[len(publicSignals)+1:pos_inner],pfW,H))
 	fmt.Println("bulletproof check W: ",zkproof.ZKverifyPdsVec_PubVec(gi,G,H,commit_inner,c_w_inner,zkproof.Padding(W[pos_inner:]),polyf,pf_bulletproof_w))
 	
@@ -601,9 +601,9 @@ func main(){
 	   }else{ temp,_=zkproof.CurveScalarMult(G,polyf.F.Mul(W[i],publicSignals[i-1]))}
 		cw,_=zkproof.CurveAdd(cw,temp)
 	}
-	wg.Done()
+	//wg.Done()
     
-    }()
+   // }()
     //Verifier computes commitment for hx*zx
 
     wg.Add(1)
