@@ -128,9 +128,10 @@ func PedersenVectorComit(a []*big.Int,G []CurvePoint, H CurvePoint,r *big.Int)(C
 	wg.Done()
     }()
 
-    c,_=CurveAdd(c2,c1)
+    
 
     wg.Wait()
+    c,_=CurveAdd(c2,c1)
 
 	temp,_=CurveScalarMult(H,r)
 	c,_=CurveAdd(temp,c)
