@@ -120,7 +120,7 @@ func PedersenVectorComit(a []*big.Int,G []CurvePoint, H CurvePoint,r *big.Int)(C
     wg.Add(1)
     c2,_:=CurveScalarMult(G[len(a)/2], a[len(a)/2])
 	go func(){
-	for i := len(a)/2; i < len(a); i++ {
+	for i := len(a)/2+1; i < len(a); i++ {
 		temp,_ := CurveScalarMult(G[i], a[i])
         c2,_=CurveAdd(c2,temp)
 
